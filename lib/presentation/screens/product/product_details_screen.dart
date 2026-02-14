@@ -38,7 +38,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     images: <String>[],
     rating: 4.5,
     reviewsCount: 82,
-    createdAt: const DateTime(2025, 1, 1),
+    createdAt: DateTime(2025, 1, 1),
   );
   int _quantity = 1;
 
@@ -82,7 +82,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
       product: product,
       quantity: safeQuantity,
     );
-    if (!context.mounted) {
+    if (!mounted) {
       return;
     }
     final bool success = cartProvider.errorMessage == null;
