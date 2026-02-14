@@ -51,4 +51,25 @@ class OrderProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<bool> placeOrder(OrderModel order) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+    try {
+      await _orderRepository.placeOrder(order);
+      _selectedOrder = order;
+      _orders = <OrderModel>[
+        order,
+        ..._orders.where((OrderModel item) => item.id != order.id),
+      ];
+      return true;
+    } catch (error) {
+      _errorMessage = error.toString();
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 }

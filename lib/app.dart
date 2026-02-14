@@ -39,7 +39,7 @@ class _NemaStoreAppState extends State<NemaStoreApp> {
           create: (_) => ProductProvider(AppDependencies.productRepository),
         ),
         ChangeNotifierProvider<CartProvider>(
-          create: (_) => CartProvider(),
+          create: (_) => CartProvider(AppDependencies.cartRepository),
         ),
         ChangeNotifierProvider<OrderProvider>(
           create: (_) => OrderProvider(AppDependencies.orderRepository),

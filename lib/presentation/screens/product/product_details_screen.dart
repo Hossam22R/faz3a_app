@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_routes.dart';
 import '../../../data/models/product_model.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/cart_provider.dart';
 import '../../providers/product_provider.dart';
 import '../../widgets/buttons/add_to_cart_button.dart';
 import '../../widgets/common/app_error_widget.dart';
@@ -127,9 +129,33 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   children: <Widget>[
                     Expanded(
                       child: AddToCartButton(
-                        onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('تمت إضافة المنتج إلى السلة')),
-                        ),
+                        onPressed: () async {
+                          final String? userId = context.read<AuthProvider>().currentUser?.id;
+                          if (userId == null || userId.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('يجب تسجيل الدخول أولاً')),
+                            );
+                            return;
+                          }
+                          final CartProvider cartProvider = context.read<CartProvider>();
+                          await cartProvider.addProduct(
+                            userId: userId,
+                            product: product,
+                            quantity: 1,
+                          );
+                          if (!context.mounted) {
+                            return;
+                          }
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                cartProvider.errorMessage == null
+                                    ? 'تمت إضافة المنتج إلى السلة'
+                                    : cartProvider.errorMessage!,
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     ),
                     const SizedBox(width: 12),

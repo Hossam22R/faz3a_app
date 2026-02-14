@@ -158,7 +158,9 @@ class AppRouter {
       ),
       GoRoute(
         path: AppRoutes.orderSuccess,
-        builder: (context, state) => const OrderSuccessScreen(),
+        builder: (context, state) => OrderSuccessScreen(
+          orderId: state.uri.queryParameters['orderId'],
+        ),
       ),
       GoRoute(
         path: AppRoutes.orders,

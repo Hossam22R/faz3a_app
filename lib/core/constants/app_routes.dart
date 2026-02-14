@@ -73,4 +73,11 @@ class AppRoutes {
   static String orderTrackingLocation(String orderId) {
     return '/orders/${Uri.encodeComponent(orderId)}/tracking';
   }
+
+  static String orderSuccessLocation(String orderId) {
+    return Uri(
+      path: orderSuccess,
+      queryParameters: <String, String>{'orderId': orderId},
+    ).toString();
+  }
 }
