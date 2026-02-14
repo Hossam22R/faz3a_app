@@ -1,4 +1,4 @@
-# Nema Store - Technical Foundation (Phases 1-10)
+# Nema Store - Technical Foundation (Phases 1-11)
 
 This repository now contains the initial implementation baseline for **Nema Store**, following the submitted architecture report.
 
@@ -47,6 +47,10 @@ This repository now contains the initial implementation baseline for **Nema Stor
   - Base providers:
     - `theme`, `auth`, `product`, `cart`, `order`, `vendor`
     - `category`, `address`, `review`
+  - Unit tests:
+    - `test/unit_tests/cart_provider_test.dart`
+    - `test/unit_tests/product_provider_admin_test.dart`
+    - `test/unit_tests/vendor_provider_test.dart`
 - Data layer foundation:
   - Enhanced `UserModel`
   - `ProductModel`
@@ -83,9 +87,8 @@ The project follows:
 
 1. Add fine-grained role policies for nested routes and deep links.
 2. Replace remaining placeholder screens with production UI and provider wiring.
-3. Add vendor product CRUD flows and admin moderation flows.
-4. Implement analytics dashboards (vendor + admin) using aggregated Firestore queries.
-5. Add unit, widget, and integration tests, then wire CI checks.
+3. Implement analytics dashboards (vendor + admin) using aggregated Firestore queries.
+4. Add widget and integration tests, then wire CI checks.
 
 ## Notes
 
