@@ -28,6 +28,12 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Regenerate Android scaffolding for CI build
+        run: flutter create --platforms=android --project-name nema_store --org com.nemastore --overwrite .
+
+      - name: Refresh dependencies after scaffolding update
+        run: flutter pub get
+
       - name: Build release APK
         run: flutter build apk --release
 
