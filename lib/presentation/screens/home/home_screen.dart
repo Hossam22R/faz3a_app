@@ -7,12 +7,30 @@ import '../../../core/constants/app_routes.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../data/models/product_model.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/product_provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../widgets/cards/product_card.dart';
+import '../../widgets/common/loading_indicator.dart';
 import '../../widgets/inputs/search_bar_custom.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final ProductProvider productProvider = context.read<ProductProvider>();
+      if (!productProvider.isLoading && productProvider.featuredProducts.isEmpty) {
+        productProvider.loadFeaturedProducts();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -163,7 +181,7 @@ class _ImplementationNoteCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: const Text(
-        'Foundation now includes phase 1 + 2 scaffolding: architecture, key models, and module routes.',
+        'Foundation includes phases 1-4 with Firebase wiring, auth flow, and guarded routes.',
       ),
     );
   }
@@ -172,53 +190,75 @@ class _ImplementationNoteCard extends StatelessWidget {
 class _FeaturedPreview extends StatelessWidget {
   const _FeaturedPreview();
 
-  static const ProductModel _featuredA = ProductModel(
-    id: 'demo-p1',
-    vendorId: 'demo-v1',
-    name: 'سماعات لاسلكية',
-    description: 'منتج تجريبي لعرض بنية الواجهة',
-    categoryId: 'electronics',
-    price: 45000,
-    discountPrice: 39000,
-    stock: 15,
-    images: <String>[],
-    createdAt: DateTime(2025, 1, 1),
-  );
-
-  static const ProductModel _featuredB = ProductModel(
-    id: 'demo-p2',
-    vendorId: 'demo-v2',
-    name: 'خلاط مطبخ',
-    description: 'منتج تجريبي لعرض بنية الواجهة',
-    categoryId: 'home',
-    price: 62000,
-    stock: 8,
-    images: <String>[],
-    createdAt: DateTime(2025, 1, 1),
-  );
+  static const List<ProductModel> _fallbackProducts = <ProductModel>[
+    ProductModel(
+      id: 'demo-p1',
+      vendorId: 'demo-v1',
+      name: 'سماعات لاسلكية',
+      description: 'منتج تجريبي لعرض بنية الواجهة',
+      categoryId: 'electronics',
+      price: 45000,
+      discountPrice: 39000,
+      stock: 15,
+      images: <String>[],
+      createdAt: DateTime(2025, 1, 1),
+    ),
+    ProductModel(
+      id: 'demo-p2',
+      vendorId: 'demo-v2',
+      name: 'خلاط مطبخ',
+      description: 'منتج تجريبي لعرض بنية الواجهة',
+      categoryId: 'home',
+      price: 62000,
+      stock: 8,
+      images: <String>[],
+      createdAt: DateTime(2025, 1, 1),
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        const Text(
-          'منتجات مميزة (Demo)',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-        ),
-        const SizedBox(height: 10),
-        SizedBox(
-          height: 290,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            children: const <Widget>[
-              SizedBox(width: 240, child: ProductCard(product: _featuredA)),
-              SizedBox(width: 12),
-              SizedBox(width: 240, child: ProductCard(product: _featuredB)),
-            ],
-          ),
-        ),
-      ],
+    return Consumer<ProductProvider>(
+      builder: (context, productProvider, _) {
+        final List<ProductModel> products = productProvider.featuredProducts.isNotEmpty
+            ? productProvider.featuredProducts
+            : _fallbackProducts;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            const Text(
+              'منتجات مميزة',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 10),
+            if (productProvider.isLoading)
+              const SizedBox(
+                height: 60,
+                child: Center(child: LoadingIndicator()),
+              )
+            else
+              SizedBox(
+                height: 290,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemBuilder: (context, index) {
+                    final ProductModel product = products[index];
+                    return SizedBox(
+                      width: 240,
+                      child: ProductCard(
+                        product: product,
+                        onTap: () => context.push(AppRoutes.productDetails),
+                      ),
+                    );
+                  },
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  itemCount: products.length,
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 }
