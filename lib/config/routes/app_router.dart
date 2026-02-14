@@ -216,7 +216,9 @@ class AppRouter {
       ),
       GoRoute(
         path: AppRoutes.editProduct,
-        builder: (context, state) => const EditProductScreen(),
+        builder: (context, state) => EditProductScreen(
+          productId: state.pathParameters['productId'] ?? '',
+        ),
       ),
       GoRoute(
         path: AppRoutes.vendorOrders,

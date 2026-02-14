@@ -31,7 +31,7 @@ class AppRoutes {
   static const String vendorDashboard = '/vendor/dashboard';
   static const String vendorProducts = '/vendor/products';
   static const String addProduct = '/vendor/products/add';
-  static const String editProduct = '/vendor/products/edit';
+  static const String editProduct = '/vendor/products/:productId/edit';
   static const String vendorOrders = '/vendor/orders';
   static const String vendorOrderDetails = '/vendor/orders/details';
   static const String vendorFinances = '/vendor/finances';
@@ -79,5 +79,9 @@ class AppRoutes {
       path: orderSuccess,
       queryParameters: <String, String>{'orderId': orderId},
     ).toString();
+  }
+
+  static String editProductLocation(String productId) {
+    return '/vendor/products/${Uri.encodeComponent(productId)}/edit';
   }
 }

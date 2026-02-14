@@ -10,12 +10,14 @@ class ProductProvider extends ChangeNotifier {
 
   List<ProductModel> _featuredProducts = <ProductModel>[];
   List<ProductModel> _categoryProducts = <ProductModel>[];
+  List<ProductModel> _vendorProducts = <ProductModel>[];
   ProductModel? _selectedProduct;
   bool _isLoading = false;
   String? _errorMessage;
 
   List<ProductModel> get featuredProducts => _featuredProducts;
   List<ProductModel> get categoryProducts => _categoryProducts;
+  List<ProductModel> get vendorProducts => _vendorProducts;
   ProductModel? get selectedProduct => _selectedProduct;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
@@ -64,6 +66,45 @@ class ProductProvider extends ChangeNotifier {
     } catch (error) {
       _errorMessage = error.toString();
       _selectedProduct = null;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> loadVendorProducts(String vendorId) async {
+    _isLoading = true;
+    _errorMessage = null;
+    _vendorProducts = <ProductModel>[];
+    notifyListeners();
+    try {
+      _vendorProducts = await _productRepository.getVendorProducts(vendorId);
+    } catch (error) {
+      _errorMessage = error.toString();
+      _vendorProducts = <ProductModel>[];
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> saveVendorProduct(ProductModel product) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+    try {
+      await _productRepository.upsertProduct(product);
+      final int index = _vendorProducts.indexWhere((ProductModel item) => item.id == product.id);
+      if (index >= 0) {
+        _vendorProducts[index] = product;
+      } else {
+        _vendorProducts = <ProductModel>[product, ..._vendorProducts];
+      }
+      _selectedProduct = product;
+      return true;
+    } catch (error) {
+      _errorMessage = error.toString();
+      return false;
     } finally {
       _isLoading = false;
       notifyListeners();

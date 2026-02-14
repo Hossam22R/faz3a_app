@@ -71,6 +71,31 @@ class FirebaseProductRepository implements ProductRepository {
   }
 
   @override
+  Future<List<ProductModel>> getVendorProducts(String vendorId) async {
+    if (!isFirebaseReady) {
+      return const <ProductModel>[];
+    }
+
+    final QuerySnapshot<Map<String, dynamic>> snapshot = await _dataSource
+        .productsCollection()
+        .where('vendorId', isEqualTo: vendorId)
+        .limit(200)
+        .get();
+
+    final List<ProductModel> products = snapshot.docs
+        .map(
+          (doc) => ProductModel.fromJson(<String, dynamic>{
+            ...doc.data(),
+            'id': doc.data()['id'] ?? doc.id,
+          }),
+        )
+        .toList();
+
+    products.sort((ProductModel a, ProductModel b) => b.createdAt.compareTo(a.createdAt));
+    return products;
+  }
+
+  @override
   Future<ProductModel?> getProductById(String productId) async {
     if (!isFirebaseReady) {
       return null;
@@ -87,6 +112,7 @@ class FirebaseProductRepository implements ProductRepository {
     });
   }
 
+  @override
   Future<void> upsertProduct(ProductModel product) async {
     if (!isFirebaseReady) {
       throw const AppException('Firebase is not initialized.');
