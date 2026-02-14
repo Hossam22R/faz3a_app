@@ -1,6 +1,8 @@
 import 'package:go_router/go_router.dart';
 
 import '../../core/constants/app_routes.dart';
+import '../../core/services/auth_session.dart';
+import '../../data/models/user_model.dart';
 import '../../presentation/screens/admin/admin_dashboard_screen.dart';
 import '../../presentation/screens/admin/analytics_screen.dart';
 import '../../presentation/screens/admin/categories_management_screen.dart';
@@ -44,9 +46,57 @@ import '../../presentation/screens/vendor/vendor_products_screen.dart';
 class AppRouter {
   AppRouter._();
 
-  static final GoRouter router = GoRouter(
-    initialLocation: AppRoutes.splash,
-    routes: <GoRoute>[
+  static const Set<String> _publicRoutes = <String>{
+    AppRoutes.login,
+    AppRoutes.register,
+    AppRoutes.forgotPassword,
+    AppRoutes.onboarding,
+  };
+
+  static GoRouter createRouter(AuthSession authSession) {
+    return GoRouter(
+      initialLocation: AppRoutes.splash,
+      refreshListenable: authSession,
+      redirect: (context, state) {
+        final String location = state.matchedLocation;
+        final bool isSplash = location == AppRoutes.splash;
+        final bool isPublic = _publicRoutes.contains(location);
+
+        if (!authSession.isReady) {
+          return isSplash ? null : AppRoutes.splash;
+        }
+
+        if (authSession.isLoggedIn) {
+          final String path = location;
+          final UserType? userType = authSession.currentUser?.userType;
+          final bool wantsAdmin = path.startsWith('/admin');
+          final bool wantsVendor = path.startsWith('/vendor');
+
+          if (wantsAdmin && userType != null && userType != UserType.admin) {
+            return AppRoutes.home;
+          }
+          if (wantsVendor &&
+              userType != null &&
+              userType != UserType.vendor &&
+              userType != UserType.admin) {
+            return AppRoutes.home;
+          }
+
+          if (isSplash || isPublic) {
+            return AppRoutes.home;
+          }
+          return null;
+        }
+
+        if (isSplash) {
+          return AppRoutes.login;
+        }
+        if (!isPublic) {
+          return AppRoutes.login;
+        }
+        return null;
+      },
+      routes: <GoRoute>[
       GoRoute(
         path: AppRoutes.splash,
         builder: (context, state) => const SplashScreen(),
@@ -203,6 +253,7 @@ class AppRouter {
         path: AppRoutes.analytics,
         builder: (context, state) => const AnalyticsScreen(),
       ),
-    ],
-  );
+      ],
+    );
+  }
 }

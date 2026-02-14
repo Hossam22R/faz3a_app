@@ -6,6 +6,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_routes.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../data/models/product_model.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../widgets/cards/product_card.dart';
 import '../../widgets/inputs/search_bar_custom.dart';
@@ -16,6 +17,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeProvider themeProvider = context.watch<ThemeProvider>();
+    final AuthProvider authProvider = context.watch<AuthProvider>();
 
     return Directionality(
       textDirection: TextDirection.rtl,
@@ -27,6 +29,18 @@ class HomeScreen extends StatelessWidget {
               tooltip: 'تبديل الثيم',
               onPressed: themeProvider.toggleTheme,
               icon: Icon(themeProvider.isDarkMode ? Icons.light_mode_outlined : Icons.dark_mode_outlined),
+            ),
+            IconButton(
+              tooltip: 'تسجيل الخروج',
+              onPressed: authProvider.isLoading
+                  ? null
+                  : () async {
+                      await context.read<AuthProvider>().logout();
+                      if (context.mounted) {
+                        context.go(AppRoutes.login);
+                      }
+                    },
+              icon: const Icon(Icons.logout_rounded),
             ),
           ],
         ),

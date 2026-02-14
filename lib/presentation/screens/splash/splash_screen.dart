@@ -1,31 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/app_routes.dart';
 import '../../../core/constants/app_strings.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
-
-  @override
-  State<SplashScreen> createState() => _SplashScreenState();
-}
-
-class _SplashScreenState extends State<SplashScreen> {
-  @override
-  void initState() {
-    super.initState();
-    _navigate();
-  }
-
-  Future<void> _navigate() async {
-    await Future<void>.delayed(const Duration(seconds: 2));
-    if (!mounted) {
-      return;
-    }
-    context.go(AppRoutes.login);
-  }
 
   @override
   Widget build(BuildContext context) {

@@ -3,35 +3,41 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class FirebaseDataSource {
   FirebaseDataSource({
     FirebaseFirestore? firestore,
-  }) : _firestore = firestore ?? FirebaseFirestore.instance;
+  }) : _firestore = firestore;
 
-  final FirebaseFirestore _firestore;
+  final FirebaseFirestore? _firestore;
+
+  FirebaseFirestore get firestore => _firestore ?? FirebaseFirestore.instance;
 
   CollectionReference<Map<String, dynamic>> usersCollection() {
-    return _firestore.collection('users');
+    return firestore.collection('users');
   }
 
   CollectionReference<Map<String, dynamic>> productsCollection() {
-    return _firestore.collection('products');
+    return firestore.collection('products');
   }
 
   CollectionReference<Map<String, dynamic>> ordersCollection() {
-    return _firestore.collection('orders');
+    return firestore.collection('orders');
   }
 
   CollectionReference<Map<String, dynamic>> categoriesCollection() {
-    return _firestore.collection('categories');
+    return firestore.collection('categories');
   }
 
   CollectionReference<Map<String, dynamic>> reviewsCollection() {
-    return _firestore.collection('reviews');
+    return firestore.collection('reviews');
   }
 
   CollectionReference<Map<String, dynamic>> addressesCollection() {
-    return _firestore.collection('addresses');
+    return firestore.collection('addresses');
   }
 
   CollectionReference<Map<String, dynamic>> adPackagesCollection() {
-    return _firestore.collection('ad_packages');
+    return firestore.collection('ad_packages');
+  }
+
+  CollectionReference<Map<String, dynamic>> cartItemsCollection(String userId) {
+    return firestore.collection('carts').doc(userId).collection('items');
   }
 }

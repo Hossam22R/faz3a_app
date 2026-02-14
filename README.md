@@ -1,4 +1,4 @@
-# Nema Store - Technical Foundation (Phases 1-2)
+# Nema Store - Technical Foundation (Phases 1-4)
 
 This repository now contains the initial implementation baseline for **Nema Store**, following the submitted architecture report.
 
@@ -37,8 +37,17 @@ This repository now contains the initial implementation baseline for **Nema Stor
   - `ReviewModel`
   - `AdPackageModel`
   - Upgraded `OrderModel` with status/payment/items support
-  - Repository contracts
-  - Remote/local data source skeletons
+  - Firebase-backed repository implementations for:
+    - auth
+    - products
+    - categories
+    - orders
+    - addresses
+    - reviews
+    - cart
+    - vendors
+    - payment status writes
+  - Remote data source helpers for collection access
 - Domain layer skeleton:
   - Base entity/repository/use-case contracts
 
@@ -53,10 +62,10 @@ The project follows:
 
 ## Next implementation steps
 
-1. Implement concrete repositories against Firestore and Firebase Auth.
-2. Replace placeholder screens with real UI widgets and feature logic.
-3. Add form validation + state handling for auth, checkout, and vendor product CRUD.
-4. Implement admin and vendor analytics data pipelines.
+1. Add role-aware route guards for nested routes and deep links (fine-grained permissions).
+2. Replace remaining placeholder screens with production UI and provider wiring.
+3. Add vendor product CRUD flows and admin moderation flows.
+4. Implement analytics dashboards (vendor + admin) using aggregated Firestore queries.
 5. Add unit, widget, and integration tests, then wire CI checks.
 
 ## Notes
