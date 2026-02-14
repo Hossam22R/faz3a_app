@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_routes.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../providers/theme_provider.dart';
 
@@ -31,6 +33,8 @@ class HomeScreen extends StatelessWidget {
             _HeroBanner(),
             SizedBox(height: 16),
             _QuickStats(),
+            SizedBox(height: 16),
+            _QuickModules(),
             SizedBox(height: 16),
             _ImplementationNoteCard(),
           ],
@@ -138,7 +142,93 @@ class _ImplementationNoteCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: const Text(
-        'This is phase 1 foundation: core architecture, branding tokens, router, and key data models.',
+        'Foundation now includes phase 1 + 2 scaffolding: architecture, key models, and module routes.',
+      ),
+    );
+  }
+}
+
+class _QuickModules extends StatelessWidget {
+  const _QuickModules();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: <Widget>[
+        Row(
+          children: <Widget>[
+            Expanded(
+              child: _ModuleButton(
+                title: 'التصنيفات',
+                icon: Icons.category_outlined,
+                onTap: () => context.push(AppRoutes.categories),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _ModuleButton(
+                title: 'السلة',
+                icon: Icons.shopping_cart_outlined,
+                onTap: () => context.push(AppRoutes.cart),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: <Widget>[
+            Expanded(
+              child: _ModuleButton(
+                title: 'طلباتي',
+                icon: Icons.list_alt_outlined,
+                onTap: () => context.push(AppRoutes.orders),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _ModuleButton(
+                title: 'لوحة المورد',
+                icon: Icons.storefront_outlined,
+                onTap: () => context.push(AppRoutes.vendorDashboard),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _ModuleButton extends StatelessWidget {
+  const _ModuleButton({
+    required this.title,
+    required this.icon,
+    required this.onTap,
+  });
+
+  final String title;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: onTap,
+      child: Ink(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppColors.cardBackground,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: <Widget>[
+            Icon(icon, color: AppColors.primaryGold),
+            const SizedBox(width: 8),
+            Expanded(child: Text(title)),
+            const Icon(Icons.chevron_left_rounded),
+          ],
+        ),
       ),
     );
   }

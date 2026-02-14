@@ -41,9 +41,14 @@ class LoginScreen extends StatelessWidget {
                 onPressed: () => context.go(AppRoutes.home),
                 child: const Text('تسجيل الدخول'),
               ),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: () => context.push(AppRoutes.forgotPassword),
+                child: const Text('نسيت كلمة المرور؟'),
+              ),
               const SizedBox(height: 12),
               TextButton(
-                onPressed: () {},
+                onPressed: () => context.push(AppRoutes.register),
                 child: const Text(
                   'إنشاء حساب مورد',
                   style: TextStyle(color: AppColors.primaryGold),

@@ -1,8 +1,8 @@
-# Nema Store - Technical Foundation (Phase 1)
+# Nema Store - Technical Foundation (Phases 1-2)
 
 This repository now contains the initial implementation baseline for **Nema Store**, following the submitted architecture report.
 
-## What is implemented in this phase
+## What is implemented
 
 - App bootstrap:
   - `lib/main.dart`
@@ -13,14 +13,24 @@ This repository now contains the initial implementation baseline for **Nema Stor
 - Routing and app composition:
   - `config/routes/app_router.dart`
   - `config/dependency_injection/injection_container.dart`
-- Initial presentation layer:
-  - Splash screen
-  - Login screen
-  - Home screen
-  - Base providers (`theme`, `auth`, `product`, `cart`, `order`, `vendor`)
+- Presentation layer scaffolding:
+  - Core screens: Splash, Login, Home
+  - Auth: Register, Forgot Password
+  - Customer flow modules: Categories, Product, Cart, Checkout, Orders, Profile, Search
+  - Vendor modules: Dashboard, Products, Orders, Finances, Ads, Analytics
+  - Admin modules: Dashboard, Vendors, Product Approval, Orders, Categories, Finances, Analytics
+  - Base providers:
+    - `theme`, `auth`, `product`, `cart`, `order`, `vendor`
+    - `category`, `address`, `review`
 - Data layer foundation:
   - Enhanced `UserModel`
-  - New `ProductModel`
+  - `ProductModel`
+  - `CategoryModel`
+  - `AddressModel`
+  - `CartItemModel`
+  - `ReviewModel`
+  - `AdPackageModel`
+  - Upgraded `OrderModel` with status/payment/items support
   - Repository contracts
   - Remote/local data source skeletons
 - Domain layer skeleton:
@@ -37,12 +47,11 @@ The project follows:
 
 ## Next implementation steps
 
-1. Complete remaining models (`Category`, `Address`, `Review`, `AdPackage`, etc.)
-2. Build authentication and onboarding flows.
-3. Implement repositories against Firestore and Firebase Auth.
-4. Add vendor dashboard modules.
-5. Add admin panel modules (Flutter web).
-6. Add unit, widget, and integration tests.
+1. Implement concrete repositories against Firestore and Firebase Auth.
+2. Replace placeholder screens with real UI widgets and feature logic.
+3. Add form validation + state handling for auth, checkout, and vendor product CRUD.
+4. Implement admin and vendor analytics data pipelines.
+5. Add unit, widget, and integration tests, then wire CI checks.
 
 ## Notes
 

@@ -1,9 +1,45 @@
 import 'package:go_router/go_router.dart';
 
 import '../../core/constants/app_routes.dart';
+import '../../presentation/screens/admin/admin_dashboard_screen.dart';
+import '../../presentation/screens/admin/analytics_screen.dart';
+import '../../presentation/screens/admin/categories_management_screen.dart';
+import '../../presentation/screens/admin/finances_screen.dart';
+import '../../presentation/screens/admin/orders_management_screen.dart';
+import '../../presentation/screens/admin/products_approval_screen.dart';
+import '../../presentation/screens/admin/vendors_management_screen.dart';
+import '../../presentation/screens/auth/forgot_password_screen.dart';
 import '../../presentation/screens/auth/login_screen.dart';
+import '../../presentation/screens/auth/register_screen.dart';
+import '../../presentation/screens/cart/cart_screen.dart';
+import '../../presentation/screens/categories/categories_screen.dart';
+import '../../presentation/screens/categories/category_products_screen.dart';
+import '../../presentation/screens/checkout/checkout_screen.dart';
+import '../../presentation/screens/checkout/order_success_screen.dart';
 import '../../presentation/screens/home/home_screen.dart';
+import '../../presentation/screens/onboarding/onboarding_screen.dart';
+import '../../presentation/screens/orders/order_details_screen.dart';
+import '../../presentation/screens/orders/order_tracking_screen.dart';
+import '../../presentation/screens/orders/orders_screen.dart';
+import '../../presentation/screens/product/product_details_screen.dart';
+import '../../presentation/screens/product/product_reviews_screen.dart';
+import '../../presentation/screens/profile/add_address_screen.dart';
+import '../../presentation/screens/profile/addresses_screen.dart';
+import '../../presentation/screens/profile/edit_profile_screen.dart';
+import '../../presentation/screens/profile/profile_screen.dart';
+import '../../presentation/screens/profile/settings_screen.dart';
+import '../../presentation/screens/profile/wishlist_screen.dart';
+import '../../presentation/screens/search/search_screen.dart';
 import '../../presentation/screens/splash/splash_screen.dart';
+import '../../presentation/screens/vendor/add_product_screen.dart';
+import '../../presentation/screens/vendor/edit_product_screen.dart';
+import '../../presentation/screens/vendor/vendor_ads_screen.dart';
+import '../../presentation/screens/vendor/vendor_analytics_screen.dart';
+import '../../presentation/screens/vendor/vendor_dashboard_screen.dart';
+import '../../presentation/screens/vendor/vendor_finances_screen.dart';
+import '../../presentation/screens/vendor/vendor_order_details_screen.dart';
+import '../../presentation/screens/vendor/vendor_orders_screen.dart';
+import '../../presentation/screens/vendor/vendor_products_screen.dart';
 
 class AppRouter {
   AppRouter._();
@@ -22,6 +58,150 @@ class AppRouter {
       GoRoute(
         path: AppRoutes.login,
         builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.onboarding,
+        builder: (context, state) => const OnboardingScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.register,
+        builder: (context, state) => const RegisterScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.forgotPassword,
+        builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.categories,
+        builder: (context, state) => const CategoriesScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.categoryProducts,
+        builder: (context, state) => const CategoryProductsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.productDetails,
+        builder: (context, state) => const ProductDetailsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.productReviews,
+        builder: (context, state) => const ProductReviewsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.search,
+        builder: (context, state) => const SearchScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.cart,
+        builder: (context, state) => const CartScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.checkout,
+        builder: (context, state) => const CheckoutScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.orderSuccess,
+        builder: (context, state) => const OrderSuccessScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.orders,
+        builder: (context, state) => const OrdersScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.orderDetails,
+        builder: (context, state) => const OrderDetailsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.orderTracking,
+        builder: (context, state) => const OrderTrackingScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.profile,
+        builder: (context, state) => const ProfileScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.editProfile,
+        builder: (context, state) => const EditProfileScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.addresses,
+        builder: (context, state) => const AddressesScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.addAddress,
+        builder: (context, state) => const AddAddressScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.wishlist,
+        builder: (context, state) => const WishlistScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.settings,
+        builder: (context, state) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.vendorDashboard,
+        builder: (context, state) => const VendorDashboardScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.vendorProducts,
+        builder: (context, state) => const VendorProductsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.addProduct,
+        builder: (context, state) => const AddProductScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.editProduct,
+        builder: (context, state) => const EditProductScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.vendorOrders,
+        builder: (context, state) => const VendorOrdersScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.vendorOrderDetails,
+        builder: (context, state) => const VendorOrderDetailsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.vendorFinances,
+        builder: (context, state) => const VendorFinancesScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.vendorAds,
+        builder: (context, state) => const VendorAdsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.vendorAnalytics,
+        builder: (context, state) => const VendorAnalyticsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.adminDashboard,
+        builder: (context, state) => const AdminDashboardScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.vendorsManagement,
+        builder: (context, state) => const VendorsManagementScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.productsApproval,
+        builder: (context, state) => const ProductsApprovalScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.ordersManagement,
+        builder: (context, state) => const OrdersManagementScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.categoriesManagement,
+        builder: (context, state) => const CategoriesManagementScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.finances,
+        builder: (context, state) => const FinancesScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.analytics,
+        builder: (context, state) => const AnalyticsScreen(),
       ),
     ],
   );
