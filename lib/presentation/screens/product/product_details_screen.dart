@@ -26,7 +26,7 @@ class ProductDetailsScreen extends StatefulWidget {
 }
 
 class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
-  static const ProductModel _fallbackProduct = ProductModel(
+  static final ProductModel _fallbackProduct = ProductModel(
     id: 'details-demo',
     vendorId: 'v1',
     name: 'سماعات لاسلكية',

@@ -7,7 +7,7 @@ import '../../widgets/common/badge_widget.dart';
 class VendorDashboardScreen extends StatelessWidget {
   const VendorDashboardScreen({super.key});
 
-  static const UserModel _vendor = UserModel(
+  static final UserModel _vendor = UserModel(
     id: 'vendor-1',
     fullName: 'Ali Hasan',
     email: 'vendor@nema.store',

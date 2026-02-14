@@ -190,7 +190,7 @@ class _ImplementationNoteCard extends StatelessWidget {
 class _FeaturedPreview extends StatelessWidget {
   const _FeaturedPreview();
 
-  static const List<ProductModel> _fallbackProducts = <ProductModel>[
+  static final List<ProductModel> _fallbackProducts = <ProductModel>[
     ProductModel(
       id: 'demo-p1',
       vendorId: 'demo-v1',
