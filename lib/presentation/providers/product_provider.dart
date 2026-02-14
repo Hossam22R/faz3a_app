@@ -11,6 +11,7 @@ class ProductProvider extends ChangeNotifier {
   List<ProductModel> _featuredProducts = <ProductModel>[];
   List<ProductModel> _categoryProducts = <ProductModel>[];
   List<ProductModel> _vendorProducts = <ProductModel>[];
+  List<ProductModel> _pendingProducts = <ProductModel>[];
   ProductModel? _selectedProduct;
   bool _isLoading = false;
   String? _errorMessage;
@@ -18,6 +19,7 @@ class ProductProvider extends ChangeNotifier {
   List<ProductModel> get featuredProducts => _featuredProducts;
   List<ProductModel> get categoryProducts => _categoryProducts;
   List<ProductModel> get vendorProducts => _vendorProducts;
+  List<ProductModel> get pendingProducts => _pendingProducts;
   ProductModel? get selectedProduct => _selectedProduct;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
@@ -101,6 +103,59 @@ class ProductProvider extends ChangeNotifier {
         _vendorProducts = <ProductModel>[product, ..._vendorProducts];
       }
       _selectedProduct = product;
+      return true;
+    } catch (error) {
+      _errorMessage = error.toString();
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> loadPendingProductsForApproval() async {
+    _isLoading = true;
+    _errorMessage = null;
+    _pendingProducts = <ProductModel>[];
+    notifyListeners();
+    try {
+      _pendingProducts = await _productRepository.getPendingProductsForApproval();
+    } catch (error) {
+      _errorMessage = error.toString();
+      _pendingProducts = <ProductModel>[];
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> updateProductApprovalStatus({
+    required String productId,
+    required ProductStatus status,
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+    try {
+      await _productRepository.updateProductStatus(productId: productId, status: status);
+      final int pendingIndex =
+          _pendingProducts.indexWhere((ProductModel product) => product.id == productId);
+      if (pendingIndex >= 0) {
+        if (status == ProductStatus.pending) {
+          _pendingProducts[pendingIndex] =
+              _pendingProducts[pendingIndex].copyWith(status: status, updatedAt: DateTime.now());
+        } else {
+          _pendingProducts.removeAt(pendingIndex);
+        }
+      }
+      final int vendorIndex = _vendorProducts.indexWhere((ProductModel product) => product.id == productId);
+      if (vendorIndex >= 0) {
+        _vendorProducts[vendorIndex] =
+            _vendorProducts[vendorIndex].copyWith(status: status, updatedAt: DateTime.now());
+      }
+      if (_selectedProduct?.id == productId) {
+        _selectedProduct = _selectedProduct!.copyWith(status: status, updatedAt: DateTime.now());
+      }
       return true;
     } catch (error) {
       _errorMessage = error.toString();

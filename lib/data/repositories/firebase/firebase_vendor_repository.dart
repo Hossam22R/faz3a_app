@@ -35,6 +35,29 @@ class FirebaseVendorRepository implements VendorRepository {
   }
 
   @override
+  Future<List<UserModel>> getVendorsForManagement() async {
+    if (!isFirebaseReady) {
+      return const <UserModel>[];
+    }
+    final QuerySnapshot<Map<String, dynamic>> snapshot = await _dataSource
+        .usersCollection()
+        .where('userType', isEqualTo: UserType.vendor.name)
+        .limit(200)
+        .get();
+
+    final List<UserModel> vendors = snapshot.docs
+        .map(
+          (doc) => UserModel.fromJson(<String, dynamic>{
+            ...doc.data(),
+            'id': doc.data()['id'] ?? doc.id,
+          }),
+        )
+        .toList();
+    vendors.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return vendors;
+  }
+
+  @override
   Future<void> updateVendorApproval({
     required String vendorId,
     required bool isApproved,

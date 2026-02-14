@@ -96,6 +96,31 @@ class FirebaseProductRepository implements ProductRepository {
   }
 
   @override
+  Future<List<ProductModel>> getPendingProductsForApproval() async {
+    if (!isFirebaseReady) {
+      return const <ProductModel>[];
+    }
+
+    final QuerySnapshot<Map<String, dynamic>> snapshot = await _dataSource
+        .productsCollection()
+        .where('status', isEqualTo: ProductStatus.pending.name)
+        .limit(200)
+        .get();
+
+    final List<ProductModel> products = snapshot.docs
+        .map(
+          (doc) => ProductModel.fromJson(<String, dynamic>{
+            ...doc.data(),
+            'id': doc.data()['id'] ?? doc.id,
+          }),
+        )
+        .toList();
+
+    products.sort((ProductModel a, ProductModel b) => b.createdAt.compareTo(a.createdAt));
+    return products;
+  }
+
+  @override
   Future<ProductModel?> getProductById(String productId) async {
     if (!isFirebaseReady) {
       return null;
@@ -118,6 +143,24 @@ class FirebaseProductRepository implements ProductRepository {
       throw const AppException('Firebase is not initialized.');
     }
     await _dataSource.productsCollection().doc(product.id).set(product.toJson(), SetOptions(merge: true));
+  }
+
+  @override
+  Future<void> updateProductStatus({
+    required String productId,
+    required ProductStatus status,
+  }) async {
+    if (!isFirebaseReady) {
+      throw const AppException('Firebase is not initialized.');
+    }
+    await _dataSource.productsCollection().doc(productId).set(
+      <String, dynamic>{
+        'status': status.name,
+        'updatedAt': FieldValue.serverTimestamp(),
+        if (status == ProductStatus.rejected) 'isActive': false,
+      },
+      SetOptions(merge: true),
+    );
   }
 
   bool _isVisibleProduct(ProductModel product) {
