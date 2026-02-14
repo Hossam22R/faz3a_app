@@ -5,7 +5,10 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_routes.dart';
 import '../../../core/constants/app_strings.dart';
+import '../../../data/models/product_model.dart';
 import '../../providers/theme_provider.dart';
+import '../../widgets/cards/product_card.dart';
+import '../../widgets/inputs/search_bar_custom.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -29,14 +32,18 @@ class HomeScreen extends StatelessWidget {
         ),
         body: ListView(
           padding: const EdgeInsets.all(16),
-          children: const <Widget>[
-            _HeroBanner(),
-            SizedBox(height: 16),
-            _QuickStats(),
-            SizedBox(height: 16),
-            _QuickModules(),
-            SizedBox(height: 16),
-            _ImplementationNoteCard(),
+          children: <Widget>[
+            const _HeroBanner(),
+            const SizedBox(height: 16),
+            const SearchBarCustom(),
+            const SizedBox(height: 16),
+            const _QuickStats(),
+            const SizedBox(height: 16),
+            const _FeaturedPreview(),
+            const SizedBox(height: 16),
+            const _QuickModules(),
+            const SizedBox(height: 16),
+            const _ImplementationNoteCard(),
           ],
         ),
       ),
@@ -144,6 +151,60 @@ class _ImplementationNoteCard extends StatelessWidget {
       child: const Text(
         'Foundation now includes phase 1 + 2 scaffolding: architecture, key models, and module routes.',
       ),
+    );
+  }
+}
+
+class _FeaturedPreview extends StatelessWidget {
+  const _FeaturedPreview();
+
+  static const ProductModel _featuredA = ProductModel(
+    id: 'demo-p1',
+    vendorId: 'demo-v1',
+    name: 'سماعات لاسلكية',
+    description: 'منتج تجريبي لعرض بنية الواجهة',
+    categoryId: 'electronics',
+    price: 45000,
+    discountPrice: 39000,
+    stock: 15,
+    images: <String>[],
+    createdAt: DateTime(2025, 1, 1),
+  );
+
+  static const ProductModel _featuredB = ProductModel(
+    id: 'demo-p2',
+    vendorId: 'demo-v2',
+    name: 'خلاط مطبخ',
+    description: 'منتج تجريبي لعرض بنية الواجهة',
+    categoryId: 'home',
+    price: 62000,
+    stock: 8,
+    images: <String>[],
+    createdAt: DateTime(2025, 1, 1),
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        const Text(
+          'منتجات مميزة (Demo)',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: 10),
+        SizedBox(
+          height: 290,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            children: const <Widget>[
+              SizedBox(width: 240, child: ProductCard(product: _featuredA)),
+              SizedBox(width: 12),
+              SizedBox(width: 240, child: ProductCard(product: _featuredB)),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

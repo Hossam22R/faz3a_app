@@ -19,6 +19,12 @@ This repository now contains the initial implementation baseline for **Nema Stor
   - Customer flow modules: Categories, Product, Cart, Checkout, Orders, Profile, Search
   - Vendor modules: Dashboard, Products, Orders, Finances, Ads, Analytics
   - Admin modules: Dashboard, Vendors, Product Approval, Orders, Categories, Finances, Analytics
+  - Shared widget library:
+    - Buttons (`primary`, `secondary`, `icon`, `add_to_cart`)
+    - Cards (`product`, `category`, `order`, `vendor`)
+    - Inputs (`custom_text_field`, `search_bar`, `dropdown`, `image_picker`)
+    - Common (`custom_app_bar`, `loading`, `empty/error states`, `rating`, `badge`, `shimmer`)
+    - Dialogs (`confirmation`, `info`, `loading`)
   - Base providers:
     - `theme`, `auth`, `product`, `cart`, `order`, `vendor`
     - `category`, `address`, `review`
