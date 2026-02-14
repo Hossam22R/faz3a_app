@@ -38,17 +38,69 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     images: <String>[],
     rating: 4.5,
     reviewsCount: 82,
-    createdAt: DateTime(2025, 1, 1),
+    createdAt: const DateTime(2025, 1, 1),
   );
+  int _quantity = 1;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (widget.productId.isNotEmpty) {
-        context.read<ProductProvider>().loadProductDetails(widget.productId);
-      }
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadProductData());
+  }
+
+  Future<void> _loadProductData() async {
+    if (widget.productId.isEmpty) {
+      return;
+    }
+    final ProductProvider productProvider = context.read<ProductProvider>();
+    await productProvider.loadProductDetails(widget.productId);
+    final ProductModel? loadedProduct = productProvider.selectedProduct;
+    if (loadedProduct != null && loadedProduct.categoryId.isNotEmpty) {
+      await productProvider.loadProductsByCategory(loadedProduct.categoryId);
+    }
+  }
+
+  Future<void> _addToCart(ProductModel product) async {
+    final String? userId = context.read<AuthProvider>().currentUser?.id;
+    if (userId == null || userId.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('يجب تسجيل الدخول أولاً')),
+      );
+      return;
+    }
+    if (!product.isInStock) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('المنتج غير متوفر حالياً')),
+      );
+      return;
+    }
+
+    final int safeQuantity = _quantity > product.stock ? product.stock : _quantity;
+    final CartProvider cartProvider = context.read<CartProvider>();
+    await cartProvider.addProduct(
+      userId: userId,
+      product: product,
+      quantity: safeQuantity,
+    );
+    if (!context.mounted) {
+      return;
+    }
+    final bool success = cartProvider.errorMessage == null;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          success
+              ? 'تمت إضافة $safeQuantity قطعة إلى السلة'
+              : cartProvider.errorMessage!,
+        ),
+        action: success
+            ? SnackBarAction(
+                label: 'السلة',
+                onPressed: () => context.push(AppRoutes.cart),
+              )
+            : null,
+      ),
+    );
   }
 
   @override
@@ -59,113 +111,186 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         appBar: AppBar(title: const Text('تفاصيل المنتج')),
         body: Consumer<ProductProvider>(
           builder: (context, productProvider, _) {
-            final ProductModel? resolved = productProvider.selectedProduct;
-            final ProductModel product = resolved ?? _fallbackProduct;
+            final ProductModel? selectedProduct = productProvider.selectedProduct;
+            final ProductModel? product = selectedProduct ??
+                (widget.productId.isEmpty ? _fallbackProduct : null);
 
-            if (productProvider.isLoading && resolved == null) {
+            if (productProvider.isLoading && product == null) {
               return const Center(child: LoadingIndicator());
             }
-            if (productProvider.errorMessage != null && resolved == null) {
+            if (productProvider.errorMessage != null && product == null) {
               return AppErrorWidget(
                 message: productProvider.errorMessage!,
-                onRetry: widget.productId.isEmpty
-                    ? null
-                    : () => context.read<ProductProvider>().loadProductDetails(widget.productId),
+                onRetry: _loadProductData,
+              );
+            }
+            if (product == null) {
+              return AppErrorWidget(
+                message: 'تعذر العثور على المنتج المطلوب.',
+                onRetry: _loadProductData,
               );
             }
 
-            return ListView(
-              padding: const EdgeInsets.all(16),
-              children: <Widget>[
-                Container(
-                  height: 220,
-                  decoration: BoxDecoration(
-                    color: Colors.black12,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  alignment: Alignment.center,
-                  child: const Icon(Icons.image_outlined, size: 52),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  product.name,
-                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  children: <Widget>[
-                    RatingStars(rating: product.rating, size: 18),
-                    const SizedBox(width: 8),
-                    Text('${product.reviewsCount} تقييم'),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Wrap(
-                  spacing: 8,
-                  children: <Widget>[
-                    if (product.hasDiscount)
-                      BadgeWidget(label: 'خصم ${product.discountPercentage}%'),
-                    BadgeWidget(label: product.isInStock ? 'مخزون متوفر' : 'غير متوفر'),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  '${product.finalPrice.toStringAsFixed(0)} IQD',
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-                ),
-                if (product.hasDiscount) ...<Widget>[
-                  const SizedBox(height: 4),
-                  Text(
-                    '${product.price.toStringAsFixed(0)} IQD',
-                    style: const TextStyle(
-                      decoration: TextDecoration.lineThrough,
-                    ),
-                  ),
-                ],
-                const SizedBox(height: 10),
-                Text(product.description),
-                const SizedBox(height: 16),
-                Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: AddToCartButton(
-                        onPressed: () async {
-                          final String? userId = context.read<AuthProvider>().currentUser?.id;
-                          if (userId == null || userId.isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('يجب تسجيل الدخول أولاً')),
-                            );
-                            return;
-                          }
-                          final CartProvider cartProvider = context.read<CartProvider>();
-                          await cartProvider.addProduct(
-                            userId: userId,
-                            product: product,
-                            quantity: 1,
-                          );
-                          if (!context.mounted) {
-                            return;
-                          }
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                cartProvider.errorMessage == null
-                                    ? 'تمت إضافة المنتج إلى السلة'
-                                    : cartProvider.errorMessage!,
+            final int displayQuantity = product.stock <= 0
+                ? 1
+                : (_quantity > product.stock ? product.stock : _quantity);
+            final List<ProductModel> relatedProducts = productProvider.categoryProducts
+                .where((ProductModel item) => item.categoryId == product.categoryId && item.id != product.id)
+                .take(4)
+                .toList();
+
+            return RefreshIndicator(
+              onRefresh: _loadProductData,
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(16),
+                children: <Widget>[
+                  if (product.images.isEmpty)
+                    Container(
+                      height: 220,
+                      decoration: BoxDecoration(
+                        color: Colors.black12,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      alignment: Alignment.center,
+                      child: const Icon(Icons.image_outlined, size: 52),
+                    )
+                  else
+                    SizedBox(
+                      height: 220,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemBuilder: (BuildContext context, int index) {
+                          final String imageUrl = product.images[index];
+                          return ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: SizedBox(
+                              width: 300,
+                              child: Image.network(
+                                imageUrl,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => Container(
+                                  color: Colors.black12,
+                                  alignment: Alignment.center,
+                                  child: const Icon(Icons.broken_image_outlined, size: 44),
+                                ),
                               ),
                             ),
                           );
                         },
+                        separatorBuilder: (_, __) => const SizedBox(width: 10),
+                        itemCount: product.images.length,
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    OutlinedButton(
-                      onPressed: () => context.push(AppRoutes.productReviewsLocation(product.id)),
-                      child: const Text('التقييمات'),
+                  const SizedBox(height: 12),
+                  Text(
+                    product.name,
+                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: <Widget>[
+                      RatingStars(rating: product.rating, size: 18),
+                      const SizedBox(width: 8),
+                      Text('${product.reviewsCount} تقييم'),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: <Widget>[
+                      if (product.hasDiscount)
+                        BadgeWidget(label: 'خصم ${product.discountPercentage}%'),
+                      BadgeWidget(label: product.isInStock ? 'مخزون متوفر' : 'غير متوفر'),
+                      BadgeWidget(label: 'تم الطلب ${product.ordersCount} مرة'),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    '${product.finalPrice.toStringAsFixed(0)} IQD',
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+                  ),
+                  if (product.hasDiscount) ...<Widget>[
+                    const SizedBox(height: 4),
+                    Text(
+                      '${product.price.toStringAsFixed(0)} IQD',
+                      style: const TextStyle(
+                        decoration: TextDecoration.lineThrough,
+                      ),
                     ),
                   ],
-                ),
-              ],
+                  const SizedBox(height: 10),
+                  Text(product.description),
+                  const SizedBox(height: 12),
+                  if (product.isInStock)
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                        child: Row(
+                          children: <Widget>[
+                            IconButton(
+                              onPressed: displayQuantity > 1
+                                  ? () => setState(() {
+                                        _quantity = displayQuantity - 1;
+                                      })
+                                  : null,
+                              icon: const Icon(Icons.remove_circle_outline),
+                            ),
+                            Text(
+                              '$displayQuantity',
+                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                            ),
+                            IconButton(
+                              onPressed: displayQuantity < product.stock
+                                  ? () => setState(() {
+                                        _quantity = displayQuantity + 1;
+                                      })
+                                  : null,
+                              icon: const Icon(Icons.add_circle_outline),
+                            ),
+                            const Spacer(),
+                            Text('المتوفر: ${product.stock}'),
+                          ],
+                        ),
+                      ),
+                    ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: AddToCartButton(
+                          onPressed: product.isInStock ? () => _addToCart(product) : null,
+                          label: product.isInStock ? 'أضف للسلة' : 'غير متوفر',
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      OutlinedButton(
+                        onPressed: () => context.push(AppRoutes.productReviewsLocation(product.id)),
+                        child: const Text('التقييمات'),
+                      ),
+                    ],
+                  ),
+                  if (relatedProducts.isNotEmpty) ...<Widget>[
+                    const SizedBox(height: 16),
+                    const Text(
+                      'منتجات مشابهة',
+                      style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 8),
+                    ...relatedProducts.map(
+                      (ProductModel related) => Card(
+                        child: ListTile(
+                          title: Text(related.name),
+                          subtitle: Text('${related.finalPrice.toStringAsFixed(0)} IQD'),
+                          trailing: const Icon(Icons.chevron_left_rounded),
+                          onTap: () => context.push(AppRoutes.productDetailsLocation(related.id)),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             );
           },
         ),
