@@ -1,4 +1,4 @@
-# Nema Store - Technical Foundation (Phases 1-11)
+# Nema Store - Technical Foundation (Phases 1-12)
 
 This repository now contains the initial implementation baseline for **Nema Store**, following the submitted architecture report.
 
@@ -38,6 +38,10 @@ This repository now contains the initial implementation baseline for **Nema Stor
     - Admin moderation flows:
       - vendors management (approve/suspend)
       - products approval (approve/reject pending products)
+    - Analytics and admin overview:
+      - vendor analytics screen (operational KPIs)
+      - admin analytics screen (platform moderation KPIs)
+      - admin dashboard quick actions
   - Shared widget library:
     - Buttons (`primary`, `secondary`, `icon`, `add_to_cart`)
     - Cards (`product`, `category`, `order`, `vendor`)
