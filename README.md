@@ -1,4 +1,4 @@
-# Nema Store - Technical Foundation (Phases 1-19)
+# Nema Store - Technical Foundation (Phases 1-20)
 
 This repository now contains the initial implementation baseline for **Nema Store**, following the submitted architecture report.
 
@@ -67,6 +67,8 @@ This repository now contains the initial implementation baseline for **Nema Stor
       - product details with quantity controls and related products
       - search with category filters and sort options
       - admin dashboard with live KPIs and operational alerts
+      - visual redesign of home opening experience to match premium dark/gold storefront style
+        (hero banner, feature cards, category strip, best-sellers grid, subscription callout)
   - Shared widget library:
     - Buttons (`primary`, `secondary`, `icon`, `add_to_cart`)
     - Cards (`product`, `category`, `order`, `vendor`)
