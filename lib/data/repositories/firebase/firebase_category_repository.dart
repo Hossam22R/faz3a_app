@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../data_sources/remote/firebase_data_source.dart';
 import '../../models/category_model.dart';
 import '../category_repository.dart';
+import 'firebase_demo_store.dart';
 import 'firebase_repository_utils.dart';
 
 class FirebaseCategoryRepository implements CategoryRepository {
@@ -13,7 +14,12 @@ class FirebaseCategoryRepository implements CategoryRepository {
   @override
   Future<List<CategoryModel>> getRootCategories() async {
     if (!isFirebaseReady) {
-      return const <CategoryModel>[];
+      FirebaseDemoStore.ensureInitialized();
+      final List<CategoryModel> categories = FirebaseDemoStore.categoriesById.values
+          .where((CategoryModel category) => category.isActive && category.isRootCategory)
+          .toList();
+      categories.sort((CategoryModel a, CategoryModel b) => a.sortOrder.compareTo(b.sortOrder));
+      return categories;
     }
 
     QuerySnapshot<Map<String, dynamic>> snapshot = await _dataSource
@@ -45,7 +51,14 @@ class FirebaseCategoryRepository implements CategoryRepository {
   @override
   Future<List<CategoryModel>> getSubCategories(String parentCategoryId) async {
     if (!isFirebaseReady) {
-      return const <CategoryModel>[];
+      FirebaseDemoStore.ensureInitialized();
+      final List<CategoryModel> categories = FirebaseDemoStore.categoriesById.values
+          .where(
+            (CategoryModel category) => category.isActive && category.parentId == parentCategoryId,
+          )
+          .toList();
+      categories.sort((CategoryModel a, CategoryModel b) => a.sortOrder.compareTo(b.sortOrder));
+      return categories;
     }
 
     final QuerySnapshot<Map<String, dynamic>> snapshot = await _dataSource

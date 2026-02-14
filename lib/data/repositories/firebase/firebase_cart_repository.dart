@@ -1,9 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../../../core/errors/exceptions.dart';
 import '../../data_sources/remote/firebase_data_source.dart';
 import '../../models/cart_item_model.dart';
 import '../cart_repository.dart';
+import 'firebase_demo_store.dart';
 import 'firebase_repository_utils.dart';
 
 class FirebaseCartRepository implements CartRepository {
@@ -14,7 +14,12 @@ class FirebaseCartRepository implements CartRepository {
   @override
   Future<List<CartItemModel>> getUserCart(String userId) async {
     if (!isFirebaseReady) {
-      return const <CartItemModel>[];
+      FirebaseDemoStore.ensureInitialized();
+      final List<CartItemModel> items = FirebaseDemoStore.cartItemsById.values
+          .where((CartItemModel item) => item.userId == userId)
+          .toList();
+      items.sort((CartItemModel a, CartItemModel b) => b.createdAt.compareTo(a.createdAt));
+      return items;
     }
 
     final QuerySnapshot<Map<String, dynamic>> snapshot =
@@ -34,7 +39,9 @@ class FirebaseCartRepository implements CartRepository {
   @override
   Future<void> addToCart(CartItemModel item) async {
     if (!isFirebaseReady) {
-      throw const AppException('Firebase is not initialized.');
+      FirebaseDemoStore.ensureInitialized();
+      FirebaseDemoStore.cartItemsById[item.id] = item;
+      return;
     }
 
     await _dataSource
@@ -49,7 +56,9 @@ class FirebaseCartRepository implements CartRepository {
     required String itemId,
   }) async {
     if (!isFirebaseReady) {
-      throw const AppException('Firebase is not initialized.');
+      FirebaseDemoStore.ensureInitialized();
+      FirebaseDemoStore.cartItemsById.remove(itemId);
+      return;
     }
     await _dataSource.cartItemsCollection(userId).doc(itemId).delete();
   }
@@ -57,7 +66,11 @@ class FirebaseCartRepository implements CartRepository {
   @override
   Future<void> clearCart(String userId) async {
     if (!isFirebaseReady) {
-      throw const AppException('Firebase is not initialized.');
+      FirebaseDemoStore.ensureInitialized();
+      FirebaseDemoStore.cartItemsById.removeWhere(
+        (_, CartItemModel item) => item.userId == userId,
+      );
+      return;
     }
 
     final snapshot = await _dataSource.cartItemsCollection(userId).get();

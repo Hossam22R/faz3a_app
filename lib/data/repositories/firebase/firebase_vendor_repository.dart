@@ -4,6 +4,7 @@ import '../../../core/errors/exceptions.dart';
 import '../../data_sources/remote/firebase_data_source.dart';
 import '../../models/user_model.dart';
 import '../vendor_repository.dart';
+import 'firebase_demo_store.dart';
 import 'firebase_repository_utils.dart';
 
 class FirebaseVendorRepository implements VendorRepository {
@@ -14,7 +15,12 @@ class FirebaseVendorRepository implements VendorRepository {
   @override
   Future<List<UserModel>> getApprovedVendors() async {
     if (!isFirebaseReady) {
-      return const <UserModel>[];
+      FirebaseDemoStore.ensureInitialized();
+      return FirebaseDemoStore.usersById.values
+          .where(
+            (UserModel user) => user.userType == UserType.vendor && user.isApproved == true,
+          )
+          .toList();
     }
 
     final QuerySnapshot<Map<String, dynamic>> snapshot = await _dataSource
@@ -37,7 +43,12 @@ class FirebaseVendorRepository implements VendorRepository {
   @override
   Future<List<UserModel>> getVendorsForManagement() async {
     if (!isFirebaseReady) {
-      return const <UserModel>[];
+      FirebaseDemoStore.ensureInitialized();
+      final List<UserModel> vendors = FirebaseDemoStore.usersById.values
+          .where((UserModel user) => user.userType == UserType.vendor)
+          .toList();
+      vendors.sort((UserModel a, UserModel b) => b.createdAt.compareTo(a.createdAt));
+      return vendors;
     }
     final QuerySnapshot<Map<String, dynamic>> snapshot = await _dataSource
         .usersCollection()
@@ -63,7 +74,16 @@ class FirebaseVendorRepository implements VendorRepository {
     required bool isApproved,
   }) async {
     if (!isFirebaseReady) {
-      throw const AppException('Firebase is not initialized.');
+      FirebaseDemoStore.ensureInitialized();
+      final UserModel? vendor = FirebaseDemoStore.usersById[vendorId];
+      if (vendor == null) {
+        throw const AppException('Vendor not found.');
+      }
+      FirebaseDemoStore.usersById[vendorId] = vendor.copyWith(
+        isApproved: isApproved,
+        updatedAt: DateTime.now(),
+      );
+      return;
     }
     await _dataSource.usersCollection().doc(vendorId).set(
       <String, dynamic>{

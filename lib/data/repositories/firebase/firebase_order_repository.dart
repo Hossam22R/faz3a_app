@@ -4,6 +4,7 @@ import '../../../core/errors/exceptions.dart';
 import '../../data_sources/remote/firebase_data_source.dart';
 import '../../models/order_model.dart';
 import '../order_repository.dart';
+import 'firebase_demo_store.dart';
 import 'firebase_repository_utils.dart';
 
 class FirebaseOrderRepository implements OrderRepository {
@@ -14,7 +15,12 @@ class FirebaseOrderRepository implements OrderRepository {
   @override
   Future<List<OrderModel>> getUserOrders(String userId) async {
     if (!isFirebaseReady) {
-      return const <OrderModel>[];
+      FirebaseDemoStore.ensureInitialized();
+      final List<OrderModel> orders = FirebaseDemoStore.ordersById.values
+          .where((OrderModel order) => order.userId == userId)
+          .toList();
+      orders.sort((OrderModel a, OrderModel b) => b.createdAt.compareTo(a.createdAt));
+      return orders;
     }
     final QuerySnapshot<Map<String, dynamic>> snapshot = await _dataSource
         .ordersCollection()
@@ -36,7 +42,12 @@ class FirebaseOrderRepository implements OrderRepository {
   @override
   Future<List<OrderModel>> getVendorOrders(String vendorId) async {
     if (!isFirebaseReady) {
-      return const <OrderModel>[];
+      FirebaseDemoStore.ensureInitialized();
+      final List<OrderModel> orders = FirebaseDemoStore.ordersById.values
+          .where((OrderModel order) => order.vendorId == vendorId || order.vendorId == 'multi-vendor')
+          .toList();
+      orders.sort((OrderModel a, OrderModel b) => b.createdAt.compareTo(a.createdAt));
+      return orders;
     }
     final QuerySnapshot<Map<String, dynamic>> snapshot =
         await _dataSource.ordersCollection().limit(250).get();
@@ -57,7 +68,10 @@ class FirebaseOrderRepository implements OrderRepository {
   @override
   Future<List<OrderModel>> getAllOrders() async {
     if (!isFirebaseReady) {
-      return const <OrderModel>[];
+      FirebaseDemoStore.ensureInitialized();
+      final List<OrderModel> orders = FirebaseDemoStore.ordersById.values.toList();
+      orders.sort((OrderModel a, OrderModel b) => b.createdAt.compareTo(a.createdAt));
+      return orders;
     }
     final QuerySnapshot<Map<String, dynamic>> snapshot = await _dataSource
         .ordersCollection()
@@ -78,7 +92,8 @@ class FirebaseOrderRepository implements OrderRepository {
   @override
   Future<OrderModel?> getOrderById(String orderId) async {
     if (!isFirebaseReady) {
-      return null;
+      FirebaseDemoStore.ensureInitialized();
+      return FirebaseDemoStore.ordersById[orderId];
     }
     final doc = await _dataSource.ordersCollection().doc(orderId).get();
     if (!doc.exists || doc.data() == null) {
@@ -93,7 +108,9 @@ class FirebaseOrderRepository implements OrderRepository {
   @override
   Future<void> placeOrder(OrderModel order) async {
     if (!isFirebaseReady) {
-      throw const AppException('Firebase is not initialized.');
+      FirebaseDemoStore.ensureInitialized();
+      FirebaseDemoStore.ordersById[order.id] = order;
+      return;
     }
     await _dataSource.ordersCollection().doc(order.id).set(order.toJson(), SetOptions(merge: true));
   }
@@ -105,7 +122,18 @@ class FirebaseOrderRepository implements OrderRepository {
     String? cancelReason,
   }) async {
     if (!isFirebaseReady) {
-      throw const AppException('Firebase is not initialized.');
+      FirebaseDemoStore.ensureInitialized();
+      final OrderModel? existing = FirebaseDemoStore.ordersById[orderId];
+      if (existing == null) {
+        throw const AppException('Order not found.');
+      }
+      FirebaseDemoStore.ordersById[orderId] = existing.copyWith(
+        status: status,
+        cancelReason: status == OrderStatus.cancelled ? (cancelReason ?? existing.cancelReason) : null,
+        updatedAt: DateTime.now(),
+        deliveredAt: status == OrderStatus.delivered ? DateTime.now() : existing.deliveredAt,
+      );
+      return;
     }
 
     final Map<String, dynamic> payload = <String, dynamic>{

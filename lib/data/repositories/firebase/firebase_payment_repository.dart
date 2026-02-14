@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../../../core/errors/exceptions.dart';
 import '../../data_sources/remote/firebase_data_source.dart';
 import '../payment_repository.dart';
+import 'firebase_demo_store.dart';
 import 'firebase_repository_utils.dart';
 
 class FirebasePaymentRepository implements PaymentRepository {
@@ -17,7 +17,15 @@ class FirebasePaymentRepository implements PaymentRepository {
     required String orderId,
   }) async {
     if (!isFirebaseReady) {
-      throw const AppException('Firebase is not initialized.');
+      FirebaseDemoStore.ensureInitialized();
+      final bool isImmediateSuccess = method == PaymentMethod.cashOnDelivery;
+      FirebaseDemoStore.paymentByOrderId[orderId] = <String, dynamic>{
+        'amount': amount,
+        'method': method.name,
+        'status': isImmediateSuccess ? 'pending_collection' : 'initiated',
+        'updatedAt': DateTime.now().toIso8601String(),
+      };
+      return isImmediateSuccess;
     }
 
     final bool isImmediateSuccess = method == PaymentMethod.cashOnDelivery;
