@@ -30,10 +30,10 @@ class VendorDashboardScreen extends StatelessWidget {
         appBar: AppBar(title: const Text('لوحة المورد')),
         body: ListView(
           padding: const EdgeInsets.all(16),
-          children: const <Widget>[
+          children: <Widget>[
             VendorCard(vendor: _vendor),
-            SizedBox(height: 12),
-            Wrap(
+            const SizedBox(height: 12),
+            const Wrap(
               spacing: 8,
               runSpacing: 8,
               children: <Widget>[
