@@ -188,6 +188,11 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           actions: <Widget>[
             IconButton(
+              tooltip: 'الحساب',
+              onPressed: () => context.push(AppRoutes.profile),
+              icon: const Icon(Icons.person_outline_rounded),
+            ),
+            IconButton(
               tooltip: 'المفضلة',
               onPressed: () => context.push(AppRoutes.wishlist),
               icon: const Icon(Icons.favorite_border_rounded),
@@ -217,45 +222,58 @@ class _HomeScreenState extends State<HomeScreen> {
 
             return RefreshIndicator(
               onRefresh: _loadHomeData,
-              child: ListView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.all(16),
-                children: <Widget>[
-                  _TopSearchStrip(
-                    userName: displayName,
-                    onSearchTap: () => context.push(AppRoutes.search),
-                    onOrdersTap: () => context.push(AppRoutes.orders),
-                  ),
-                  const SizedBox(height: 16),
-                  _HeroShowcase(
-                    onPrimaryTap: () => context.push(AppRoutes.categories),
-                    onSecondaryTap: () => context.push(AppRoutes.search),
-                  ),
-                  const SizedBox(height: 16),
-                  const _BenefitCardsRow(),
-                  const SizedBox(height: 18),
-                  _SectionHeader(
-                    title: 'تسوق حسب الفئة',
-                    onMoreTap: () => context.push(AppRoutes.categories),
-                  ),
-                  const SizedBox(height: 16),
-                  _CategoryStrip(categories: categories),
-                  const SizedBox(height: 18),
-                  _SectionHeader(
-                    title: 'الأكثر مبيعًا',
-                    onMoreTap: () => context.push(AppRoutes.search),
-                  ),
-                  const SizedBox(height: 16),
-                  _BestSellersGrid(
-                    products: products,
-                    onProductTap: (String productId) => context.push(AppRoutes.productDetailsLocation(productId)),
-                  ),
-                  const SizedBox(height: 18),
-                  const _SubscribeCard(),
-                  const SizedBox(height: 18),
-                  _RoleQuickActions(userType: userType),
-                  const SizedBox(height: 10),
-                ],
+              child: LayoutBuilder(
+                builder: (BuildContext context, BoxConstraints constraints) {
+                  final double horizontalPadding = constraints.maxWidth > 700
+                      ? (constraints.maxWidth - 700) / 2
+                      : 16;
+                  return ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: EdgeInsets.fromLTRB(horizontalPadding, 16, horizontalPadding, 22),
+                    children: <Widget>[
+                      const _AnnouncementBar(),
+                      const SizedBox(height: 12),
+                      _TopSearchStrip(
+                        userName: displayName,
+                        onSearchTap: () => context.push(AppRoutes.search),
+                        onOrdersTap: () => context.push(AppRoutes.orders),
+                      ),
+                      const SizedBox(height: 16),
+                      _HeroShowcase(
+                        onPrimaryTap: () => context.push(AppRoutes.categories),
+                        onSecondaryTap: () => context.push(AppRoutes.search),
+                      ),
+                      const SizedBox(height: 14),
+                      const _TrustBadgesRow(),
+                      const SizedBox(height: 14),
+                      const _BenefitCardsRow(),
+                      const SizedBox(height: 18),
+                      _SectionHeader(
+                        title: 'تسوق حسب الفئة',
+                        onMoreTap: () => context.push(AppRoutes.categories),
+                      ),
+                      const SizedBox(height: 14),
+                      _CategoryStrip(categories: categories),
+                      const SizedBox(height: 18),
+                      _SectionHeader(
+                        title: 'الأكثر مبيعًا',
+                        onMoreTap: () => context.push(AppRoutes.search),
+                      ),
+                      const SizedBox(height: 14),
+                      _BestSellersGrid(
+                        products: products,
+                        onProductTap: (String productId) =>
+                            context.push(AppRoutes.productDetailsLocation(productId)),
+                      ),
+                      const SizedBox(height: 18),
+                      const _SubscribeCard(),
+                      const SizedBox(height: 14),
+                      _RoleQuickActions(userType: userType),
+                      const SizedBox(height: 14),
+                      const _HomeFooterPanel(),
+                    ],
+                  );
+                },
               ),
             );
           },
@@ -332,6 +350,82 @@ class _TopSearchStrip extends StatelessWidget {
               ),
             ],
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AnnouncementBar extends StatelessWidget {
+  const _AnnouncementBar();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFF141414),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.primaryGold.withValues(alpha: 0.18)),
+      ),
+      child: const Row(
+        children: <Widget>[
+          Icon(Icons.campaign_outlined, size: 16, color: AppColors.primaryGold),
+          SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'عروض اليوم متاحة الآن | منتجات مختارة بأسعار خاصة',
+              style: TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
+            ),
+          ),
+          Icon(Icons.arrow_back_ios_new_rounded, size: 14, color: AppColors.textHint),
+        ],
+      ),
+    );
+  }
+}
+
+class _TrustBadgesRow extends StatelessWidget {
+  const _TrustBadgesRow();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: <Widget>[
+        _TrustChip(icon: Icons.shield_outlined, label: 'متجر موثوق'),
+        _TrustChip(icon: Icons.workspace_premium_outlined, label: 'جودة مضمونة'),
+        _TrustChip(icon: Icons.support_agent_outlined, label: 'دعم 24/7'),
+      ],
+    );
+  }
+}
+
+class _TrustChip extends StatelessWidget {
+  const _TrustChip({
+    required this.icon,
+    required this.label,
+  });
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: AppColors.cardBackground.withValues(alpha: 0.7),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: AppColors.primaryGold.withValues(alpha: 0.18)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Icon(icon, size: 14, color: AppColors.primaryGold),
+          const SizedBox(width: 6),
+          Text(label, style: const TextStyle(fontSize: 11.5)),
         ],
       ),
     );
@@ -448,14 +542,39 @@ class _HeroShowcase extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 10),
-          Container(
-            width: 84,
-            height: 84,
-            decoration: BoxDecoration(
-              gradient: AppColors.goldGradient,
-              borderRadius: BorderRadius.circular(14),
+          SizedBox(
+            width: 96,
+            height: 96,
+            child: Stack(
+              children: <Widget>[
+                Positioned(
+                  top: 10,
+                  left: 8,
+                  child: Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      gradient: AppColors.goldGradient,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: const Icon(Icons.local_shipping_rounded, color: AppColors.primaryDark, size: 34),
+                  ),
+                ),
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: Container(
+                    width: 34,
+                    height: 34,
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryGold.withValues(alpha: 0.95),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.location_on_rounded, color: AppColors.primaryDark, size: 18),
+                  ),
+                ),
+              ],
             ),
-            child: const Icon(Icons.local_shipping_rounded, color: AppColors.primaryDark, size: 40),
           ),
         ],
       ),
@@ -660,7 +779,15 @@ class _BestSellersGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<ProductModel> topProducts = products.take(8).toList();
+    final List<ProductModel> sorted = List<ProductModel>.from(products)
+      ..sort((ProductModel a, ProductModel b) {
+        final int byOrders = b.ordersCount.compareTo(a.ordersCount);
+        if (byOrders != 0) {
+          return byOrders;
+        }
+        return b.rating.compareTo(a.rating);
+      });
+    final List<ProductModel> topProducts = sorted.take(8).toList();
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -724,6 +851,29 @@ class _BestSellerCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
+            Row(
+              children: <Widget>[
+                if (product.hasDiscount)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryGold.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      'خصم ${product.discountPercentage}%',
+                      style: const TextStyle(fontSize: 10, color: AppColors.primaryGold),
+                    ),
+                  ),
+                const Spacer(),
+                Icon(
+                  product.isInStock ? Icons.check_circle_outline : Icons.remove_circle_outline,
+                  size: 14,
+                  color: product.isInStock ? Colors.greenAccent : Colors.redAccent,
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
             Text(
               product.name,
               maxLines: 2,
@@ -801,6 +951,72 @@ class _SubscribeCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _HomeFooterPanel extends StatelessWidget {
+  const _HomeFooterPanel();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF151515),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.primaryGold.withValues(alpha: 0.18)),
+      ),
+      child: const Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            'نعمة ستور',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: AppColors.primaryGold,
+            ),
+          ),
+          SizedBox(height: 4),
+          Text(
+            'تجربة تسوق عراقية تجمع الجودة والسرعة في تطبيق واحد.',
+            style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+          ),
+          SizedBox(height: 10),
+          Wrap(
+            spacing: 12,
+            runSpacing: 8,
+            children: <Widget>[
+              _FooterItem(icon: Icons.local_shipping_outlined, text: 'شحن داخل العراق'),
+              _FooterItem(icon: Icons.security_outlined, text: 'دفع آمن'),
+              _FooterItem(icon: Icons.support_agent_outlined, text: 'دعم سريع'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FooterItem extends StatelessWidget {
+  const _FooterItem({
+    required this.icon,
+    required this.text,
+  });
+
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        Icon(icon, size: 14, color: AppColors.primaryGold),
+        const SizedBox(width: 5),
+        Text(text, style: const TextStyle(fontSize: 11.5)),
+      ],
     );
   }
 }
