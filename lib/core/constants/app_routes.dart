@@ -33,7 +33,7 @@ class AppRoutes {
   static const String addProduct = '/vendor/products/add';
   static const String editProduct = '/vendor/products/:productId/edit';
   static const String vendorOrders = '/vendor/orders';
-  static const String vendorOrderDetails = '/vendor/orders/details';
+  static const String vendorOrderDetails = '/vendor/orders/:orderId';
   static const String vendorFinances = '/vendor/finances';
   static const String vendorAds = '/vendor/ads';
   static const String vendorAnalytics = '/vendor/analytics';
@@ -83,5 +83,9 @@ class AppRoutes {
 
   static String editProductLocation(String productId) {
     return '/vendor/products/${Uri.encodeComponent(productId)}/edit';
+  }
+
+  static String vendorOrderDetailsLocation(String orderId) {
+    return '/vendor/orders/${Uri.encodeComponent(orderId)}';
   }
 }

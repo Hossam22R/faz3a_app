@@ -226,7 +226,9 @@ class AppRouter {
       ),
       GoRoute(
         path: AppRoutes.vendorOrderDetails,
-        builder: (context, state) => const VendorOrderDetailsScreen(),
+        builder: (context, state) => VendorOrderDetailsScreen(
+          orderId: state.pathParameters['orderId'] ?? '',
+        ),
       ),
       GoRoute(
         path: AppRoutes.vendorFinances,

@@ -34,6 +34,48 @@ class FirebaseOrderRepository implements OrderRepository {
   }
 
   @override
+  Future<List<OrderModel>> getVendorOrders(String vendorId) async {
+    if (!isFirebaseReady) {
+      return const <OrderModel>[];
+    }
+    final QuerySnapshot<Map<String, dynamic>> snapshot =
+        await _dataSource.ordersCollection().limit(250).get();
+
+    final List<OrderModel> orders = snapshot.docs
+        .map(
+          (doc) => OrderModel.fromJson(<String, dynamic>{
+            ...doc.data(),
+            'id': doc.data()['id'] ?? doc.id,
+          }),
+        )
+        .where((OrderModel order) => order.vendorId == vendorId || order.vendorId == 'multi-vendor')
+        .toList();
+    orders.sort((OrderModel a, OrderModel b) => b.createdAt.compareTo(a.createdAt));
+    return orders;
+  }
+
+  @override
+  Future<List<OrderModel>> getAllOrders() async {
+    if (!isFirebaseReady) {
+      return const <OrderModel>[];
+    }
+    final QuerySnapshot<Map<String, dynamic>> snapshot = await _dataSource
+        .ordersCollection()
+        .orderBy('createdAt', descending: true)
+        .limit(300)
+        .get();
+
+    return snapshot.docs
+        .map(
+          (doc) => OrderModel.fromJson(<String, dynamic>{
+            ...doc.data(),
+            'id': doc.data()['id'] ?? doc.id,
+          }),
+        )
+        .toList();
+  }
+
+  @override
   Future<OrderModel?> getOrderById(String orderId) async {
     if (!isFirebaseReady) {
       return null;
@@ -54,5 +96,31 @@ class FirebaseOrderRepository implements OrderRepository {
       throw const AppException('Firebase is not initialized.');
     }
     await _dataSource.ordersCollection().doc(order.id).set(order.toJson(), SetOptions(merge: true));
+  }
+
+  @override
+  Future<void> updateOrderStatus({
+    required String orderId,
+    required OrderStatus status,
+    String? cancelReason,
+  }) async {
+    if (!isFirebaseReady) {
+      throw const AppException('Firebase is not initialized.');
+    }
+
+    final Map<String, dynamic> payload = <String, dynamic>{
+      'status': status.name,
+      'updatedAt': FieldValue.serverTimestamp(),
+    };
+    if (status == OrderStatus.cancelled) {
+      payload['cancelReason'] = cancelReason ?? 'Cancelled by operator';
+    } else {
+      payload['cancelReason'] = null;
+    }
+    if (status == OrderStatus.delivered) {
+      payload['deliveredAt'] = FieldValue.serverTimestamp();
+    }
+
+    await _dataSource.ordersCollection().doc(orderId).set(payload, SetOptions(merge: true));
   }
 }
