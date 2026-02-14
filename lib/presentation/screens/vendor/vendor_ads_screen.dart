@@ -80,7 +80,7 @@ class _VendorAdsScreenState extends State<VendorAdsScreen> {
                           Text('الباقة الحالية: ${_packageLabel(product.adPackage)}'),
                           const SizedBox(height: 8),
                           DropdownButtonFormField<AdPackage>(
-                            value: product.adPackage,
+                            initialValue: product.adPackage,
                             items: AdPackage.values
                                 .map(
                                   (AdPackage package) => DropdownMenuItem<AdPackage>(
@@ -102,7 +102,7 @@ class _VendorAdsScreenState extends State<VendorAdsScreen> {
                                       updatedAt: DateTime.now(),
                                     );
                                     final bool ok = await context.read<ProductProvider>().saveVendorProduct(updated);
-                                    if (!mounted) {
+                                    if (!context.mounted) {
                                       return;
                                     }
                                     ScaffoldMessenger.of(context).showSnackBar(

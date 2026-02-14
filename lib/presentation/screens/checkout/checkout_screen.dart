@@ -257,17 +257,30 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   )
                 else
                   ...addressProvider.addresses.map(
-                    (AddressModel address) => RadioListTile<String>(
-                      value: address.id,
-                      groupValue: _selectedAddressId,
-                      onChanged: (String? value) {
-                        setState(() {
-                          _selectedAddressId = value;
-                        });
-                      },
-                      title: Text(address.label),
-                      subtitle: Text(address.compactAddress),
-                    ),
+                    (AddressModel address) {
+                      final bool selected = _selectedAddressId == address.id;
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        child: ListTile(
+                          onTap: () {
+                            setState(() {
+                              _selectedAddressId = address.id;
+                            });
+                          },
+                          leading: Icon(
+                            selected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                          ),
+                          title: Text(address.label),
+                          subtitle: Text(address.compactAddress),
+                          trailing: address.isDefault
+                              ? const Chip(
+                                  label: Text('افتراضي'),
+                                  visualDensity: VisualDensity.compact,
+                                )
+                              : null,
+                        ),
+                      );
+                    },
                   ),
                 const SizedBox(height: 16),
                 const Text(
@@ -276,19 +289,23 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 ),
                 const SizedBox(height: 8),
                 ...PaymentMethod.values.map(
-                  (PaymentMethod method) => RadioListTile<PaymentMethod>(
-                    value: method,
-                    groupValue: _selectedPaymentMethod,
-                    onChanged: (PaymentMethod? value) {
-                      if (value == null) {
-                        return;
-                      }
-                      setState(() {
-                        _selectedPaymentMethod = value;
-                      });
-                    },
-                    title: Text(_paymentLabel(method)),
-                  ),
+                  (PaymentMethod method) {
+                    final bool selected = _selectedPaymentMethod == method;
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      child: ListTile(
+                        onTap: () {
+                          setState(() {
+                            _selectedPaymentMethod = method;
+                          });
+                        },
+                        leading: Icon(
+                          selected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                        ),
+                        title: Text(_paymentLabel(method)),
+                      ),
+                    );
+                  },
                 ),
                 const SizedBox(height: 8),
                 TextField(

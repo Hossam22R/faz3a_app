@@ -22,8 +22,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   }
 
   Future<void> _loadData() async {
-    await context.read<VendorProvider>().loadVendorsForManagement();
-    await context.read<ProductProvider>().loadPendingProductsForApproval();
+    final VendorProvider vendorProvider = context.read<VendorProvider>();
+    final ProductProvider productProvider = context.read<ProductProvider>();
+    await vendorProvider.loadVendorsForManagement();
+    await productProvider.loadPendingProductsForApproval();
   }
 
   @override

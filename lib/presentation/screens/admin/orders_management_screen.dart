@@ -144,7 +144,7 @@ class _ActionChipButton extends StatelessWidget {
     return ActionChip(
       label: Text(label),
       onPressed: onTap,
-      backgroundColor: isDanger ? Colors.red.withOpacity(0.12) : null,
+      backgroundColor: isDanger ? Colors.red.withValues(alpha: 0.12) : null,
     );
   }
 }
