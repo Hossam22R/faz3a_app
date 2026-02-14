@@ -9,10 +9,14 @@ class ProductProvider extends ChangeNotifier {
   final ProductRepository _productRepository;
 
   List<ProductModel> _featuredProducts = <ProductModel>[];
+  List<ProductModel> _categoryProducts = <ProductModel>[];
+  ProductModel? _selectedProduct;
   bool _isLoading = false;
   String? _errorMessage;
 
   List<ProductModel> get featuredProducts => _featuredProducts;
+  List<ProductModel> get categoryProducts => _categoryProducts;
+  ProductModel? get selectedProduct => _selectedProduct;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
@@ -25,6 +29,41 @@ class ProductProvider extends ChangeNotifier {
     } catch (error) {
       _errorMessage = error.toString();
       _featuredProducts = <ProductModel>[];
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> loadProductsByCategory(String categoryId) async {
+    _isLoading = true;
+    _errorMessage = null;
+    _categoryProducts = <ProductModel>[];
+    notifyListeners();
+    try {
+      _categoryProducts = await _productRepository.getProductsByCategory(categoryId);
+    } catch (error) {
+      _errorMessage = error.toString();
+      _categoryProducts = <ProductModel>[];
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> loadProductDetails(String productId) async {
+    _isLoading = true;
+    _errorMessage = null;
+    _selectedProduct = null;
+    notifyListeners();
+    try {
+      _selectedProduct = await _productRepository.getProductById(productId);
+      if (_selectedProduct == null) {
+        _errorMessage = 'Product not found.';
+      }
+    } catch (error) {
+      _errorMessage = error.toString();
+      _selectedProduct = null;
     } finally {
       _isLoading = false;
       notifyListeners();

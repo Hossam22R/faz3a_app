@@ -1,4 +1,4 @@
-# Nema Store - Technical Foundation (Phases 1-4)
+# Nema Store - Technical Foundation (Phases 1-6)
 
 This repository now contains the initial implementation baseline for **Nema Store**, following the submitted architecture report.
 
@@ -13,6 +13,7 @@ This repository now contains the initial implementation baseline for **Nema Stor
 - Routing and app composition:
   - `config/routes/app_router.dart`
   - `config/dependency_injection/injection_container.dart`
+  - dynamic route params for category/product/order flows
 - Presentation layer scaffolding:
   - Core screens: Splash, Login, Home
   - Auth: Register, Forgot Password
@@ -22,8 +23,10 @@ This repository now contains the initial implementation baseline for **Nema Stor
   - Provider-backed screens now active:
     - Home featured products
     - Categories list
+    - Category products grid (by `categoryId`)
+    - Product details (by `productId`)
     - Orders list
-    - Product reviews list
+    - Product reviews list (by `productId`)
   - Shared widget library:
     - Buttons (`primary`, `secondary`, `icon`, `add_to_cart`)
     - Cards (`product`, `category`, `order`, `vendor`)
@@ -67,7 +70,7 @@ The project follows:
 
 ## Next implementation steps
 
-1. Add role-aware route guards for nested routes and deep links (fine-grained permissions).
+1. Add fine-grained role policies for nested routes and deep links.
 2. Replace remaining placeholder screens with production UI and provider wiring.
 3. Add vendor product CRUD flows and admin moderation flows.
 4. Implement analytics dashboards (vendor + admin) using aggregated Firestore queries.

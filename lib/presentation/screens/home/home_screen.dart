@@ -248,7 +248,7 @@ class _FeaturedPreview extends StatelessWidget {
                       width: 240,
                       child: ProductCard(
                         product: product,
-                        onTap: () => context.push(AppRoutes.productDetails),
+                        onTap: () => context.push(AppRoutes.productDetailsLocation(product.id)),
                       ),
                     );
                   },

@@ -30,7 +30,7 @@ class FirebaseProductRepository implements ProductRepository {
             'id': doc.data()['id'] ?? doc.id,
           }),
         )
-        .where((ProductModel product) => product.status == ProductStatus.approved || product.status == ProductStatus.pending)
+        .where(_isVisibleProduct)
         .toList();
 
     products.sort((ProductModel a, ProductModel b) {
@@ -40,6 +40,33 @@ class FirebaseProductRepository implements ProductRepository {
       return a.isFeatured ? -1 : 1;
     });
 
+    return products;
+  }
+
+  @override
+  Future<List<ProductModel>> getProductsByCategory(String categoryId) async {
+    if (!isFirebaseReady) {
+      return const <ProductModel>[];
+    }
+
+    final QuerySnapshot<Map<String, dynamic>> snapshot = await _dataSource
+        .productsCollection()
+        .where('isActive', isEqualTo: true)
+        .where('categoryId', isEqualTo: categoryId)
+        .limit(120)
+        .get();
+
+    final List<ProductModel> products = snapshot.docs
+        .map(
+          (doc) => ProductModel.fromJson(<String, dynamic>{
+            ...doc.data(),
+            'id': doc.data()['id'] ?? doc.id,
+          }),
+        )
+        .where(_isVisibleProduct)
+        .toList();
+
+    products.sort((ProductModel a, ProductModel b) => b.createdAt.compareTo(a.createdAt));
     return products;
   }
 
@@ -65,5 +92,9 @@ class FirebaseProductRepository implements ProductRepository {
       throw const AppException('Firebase is not initialized.');
     }
     await _dataSource.productsCollection().doc(product.id).set(product.toJson(), SetOptions(merge: true));
+  }
+
+  bool _isVisibleProduct(ProductModel product) {
+    return product.status == ProductStatus.approved || product.status == ProductStatus.pending;
   }
 }

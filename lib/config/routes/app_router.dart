@@ -127,15 +127,22 @@ class AppRouter {
       ),
       GoRoute(
         path: AppRoutes.categoryProducts,
-        builder: (context, state) => const CategoryProductsScreen(),
+        builder: (context, state) => CategoryProductsScreen(
+          categoryId: state.pathParameters['categoryId'] ?? '',
+          categoryName: state.uri.queryParameters['name'],
+        ),
       ),
       GoRoute(
         path: AppRoutes.productDetails,
-        builder: (context, state) => const ProductDetailsScreen(),
+        builder: (context, state) => ProductDetailsScreen(
+          productId: state.pathParameters['productId'] ?? '',
+        ),
       ),
       GoRoute(
         path: AppRoutes.productReviews,
-        builder: (context, state) => const ProductReviewsScreen(),
+        builder: (context, state) => ProductReviewsScreen(
+          productId: state.pathParameters['productId'] ?? '',
+        ),
       ),
       GoRoute(
         path: AppRoutes.search,
@@ -159,11 +166,15 @@ class AppRouter {
       ),
       GoRoute(
         path: AppRoutes.orderDetails,
-        builder: (context, state) => const OrderDetailsScreen(),
+        builder: (context, state) => OrderDetailsScreen(
+          orderId: state.pathParameters['orderId'] ?? '',
+        ),
       ),
       GoRoute(
         path: AppRoutes.orderTracking,
-        builder: (context, state) => const OrderTrackingScreen(),
+        builder: (context, state) => OrderTrackingScreen(
+          orderId: state.pathParameters['orderId'] ?? '',
+        ),
       ),
       GoRoute(
         path: AppRoutes.profile,

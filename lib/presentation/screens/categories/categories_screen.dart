@@ -18,27 +18,6 @@ class CategoriesScreen extends StatefulWidget {
 }
 
 class _CategoriesScreenState extends State<CategoriesScreen> {
-  static const List<CategoryModel> _fallbackCategories = <CategoryModel>[
-    CategoryModel(
-      id: 'cat-electronics',
-      name: 'Electronics',
-      nameAr: 'إلكترونيات',
-      createdAt: DateTime(2025, 1, 1),
-    ),
-    CategoryModel(
-      id: 'cat-home',
-      name: 'Home',
-      nameAr: 'المنزل والمطبخ',
-      createdAt: DateTime(2025, 1, 1),
-    ),
-    CategoryModel(
-      id: 'cat-fashion',
-      name: 'Fashion',
-      nameAr: 'الأزياء',
-      createdAt: DateTime(2025, 1, 1),
-    ),
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -58,9 +37,6 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         appBar: AppBar(title: const Text('التصنيفات')),
         body: Consumer<CategoryProvider>(
           builder: (context, provider, _) {
-            final List<CategoryModel> categories =
-                provider.categories.isNotEmpty ? provider.categories : _fallbackCategories;
-
             if (provider.isLoading) {
               return const Center(child: LoadingIndicator());
             }
@@ -70,21 +46,26 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                 onRetry: provider.loadRootCategories,
               );
             }
-            if (categories.isEmpty) {
+            if (provider.categories.isEmpty) {
               return const EmptyState(title: 'لا توجد تصنيفات حالياً');
             }
 
             return ListView.separated(
               padding: const EdgeInsets.all(16),
               itemBuilder: (BuildContext context, int index) {
-                final CategoryModel category = categories[index];
+                final CategoryModel category = provider.categories[index];
                 return CategoryCard(
                   category: category,
-                  onTap: () => context.push(AppRoutes.categoryProducts),
+                  onTap: () => context.push(
+                    AppRoutes.categoryProductsLocation(
+                      category.id,
+                      categoryName: category.nameAr ?? category.name,
+                    ),
+                  ),
                 );
               },
               separatorBuilder: (_, __) => const SizedBox(height: 8),
-              itemCount: categories.length,
+              itemCount: provider.categories.length,
             );
           },
         ),
