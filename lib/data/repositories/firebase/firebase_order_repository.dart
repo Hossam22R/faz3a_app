@@ -34,6 +34,21 @@ class FirebaseOrderRepository implements OrderRepository {
   }
 
   @override
+  Future<OrderModel?> getOrderById(String orderId) async {
+    if (!isFirebaseReady) {
+      return null;
+    }
+    final doc = await _dataSource.ordersCollection().doc(orderId).get();
+    if (!doc.exists || doc.data() == null) {
+      return null;
+    }
+    return OrderModel.fromJson(<String, dynamic>{
+      ...doc.data()!,
+      'id': doc.data()!['id'] ?? doc.id,
+    });
+  }
+
+  @override
   Future<void> placeOrder(OrderModel order) async {
     if (!isFirebaseReady) {
       throw const AppException('Firebase is not initialized.');

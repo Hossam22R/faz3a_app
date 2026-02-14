@@ -1,4 +1,4 @@
-# Nema Store - Technical Foundation (Phases 1-6)
+# Nema Store - Technical Foundation (Phases 1-7)
 
 This repository now contains the initial implementation baseline for **Nema Store**, following the submitted architecture report.
 
@@ -26,6 +26,7 @@ This repository now contains the initial implementation baseline for **Nema Stor
     - Category products grid (by `categoryId`)
     - Product details (by `productId`)
     - Orders list
+    - Order details + tracking (by `orderId`)
     - Product reviews list (by `productId`)
   - Shared widget library:
     - Buttons (`primary`, `secondary`, `icon`, `add_to_cart`)
