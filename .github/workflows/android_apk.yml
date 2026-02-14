@@ -1,0 +1,61 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - cursor/application-core-structure-9d0f
+    paths:
+      - 'lib/**'
+      - 'android/**'
+      - 'pubspec.yaml'
+      - '.github/workflows/android_apk.yml'
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Backup app source before scaffolding regeneration
+        run: |
+          mkdir -p /tmp/nema_src
+          cp -r lib /tmp/nema_src/lib
+          cp pubspec.yaml /tmp/nema_src/pubspec.yaml
+          if [ -d assets ]; then cp -r assets /tmp/nema_src/assets; fi
+          if [ -f analysis_options.yaml ]; then cp analysis_options.yaml /tmp/nema_src/analysis_options.yaml; fi
+
+      - name: Regenerate Android scaffolding for CI build
+        run: flutter create --platforms=android --project-name nema_store --org com.nemastore --overwrite .
+
+      - name: Restore app source after scaffolding regeneration
+        run: |
+          rm -rf lib
+          cp -r /tmp/nema_src/lib lib
+          cp /tmp/nema_src/pubspec.yaml pubspec.yaml
+          if [ -d /tmp/nema_src/assets ]; then cp -r /tmp/nema_src/assets assets; fi
+          if [ -f /tmp/nema_src/analysis_options.yaml ]; then cp /tmp/nema_src/analysis_options.yaml analysis_options.yaml; fi
+
+      - name: Refresh dependencies after scaffolding update
+        run: flutter pub get
+
+      - name: Build release APK
+        run: flutter build apk --release
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nema-store-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
