@@ -28,8 +28,24 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Backup app source before scaffolding regeneration
+        run: |
+          mkdir -p /tmp/nema_src
+          cp -r lib /tmp/nema_src/lib
+          cp pubspec.yaml /tmp/nema_src/pubspec.yaml
+          if [ -d assets ]; then cp -r assets /tmp/nema_src/assets; fi
+          if [ -f analysis_options.yaml ]; then cp analysis_options.yaml /tmp/nema_src/analysis_options.yaml; fi
+
       - name: Regenerate Android scaffolding for CI build
         run: flutter create --platforms=android --project-name nema_store --org com.nemastore --overwrite .
+
+      - name: Restore app source after scaffolding regeneration
+        run: |
+          rm -rf lib
+          cp -r /tmp/nema_src/lib lib
+          cp /tmp/nema_src/pubspec.yaml pubspec.yaml
+          if [ -d /tmp/nema_src/assets ]; then cp -r /tmp/nema_src/assets assets; fi
+          if [ -f /tmp/nema_src/analysis_options.yaml ]; then cp /tmp/nema_src/analysis_options.yaml analysis_options.yaml; fi
 
       - name: Refresh dependencies after scaffolding update
         run: flutter pub get
