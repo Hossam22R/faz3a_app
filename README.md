@@ -1,4 +1,4 @@
-# Nema Store - Technical Foundation (Phases 1-16)
+# Nema Store - Technical Foundation (Phases 1-17)
 
 This repository now contains the initial implementation baseline for **Nema Store**, following the submitted architecture report.
 
@@ -72,6 +72,8 @@ This repository now contains the initial implementation baseline for **Nema Stor
     - `test/unit_tests/cart_provider_test.dart`
     - `test/unit_tests/product_provider_admin_test.dart`
     - `test/unit_tests/vendor_provider_test.dart`
+    - `test/unit_tests/order_provider_management_test.dart`
+    - `test/unit_tests/auth_provider_profile_test.dart`
   - Widget tests:
     - `test/widget_tests/badge_widget_test.dart`
   - Integration tests:
