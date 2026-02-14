@@ -1,4 +1,4 @@
-# Nema Store - Technical Foundation (Phases 1-17)
+# Nema Store - Technical Foundation (Phases 1-18)
 
 This repository now contains the initial implementation baseline for **Nema Store**, following the submitted architecture report.
 
@@ -59,6 +59,11 @@ This repository now contains the initial implementation baseline for **Nema Stor
       - vendor finances dashboard
       - admin finances dashboard
       - admin categories management list
+    - UX completion pass for core flows:
+      - home marketplace hub (categories + featured + recent orders + refresh)
+      - orders page with status filters and KPI summary
+      - vendor dashboard with live stats and quick actions
+      - localized order status chips across order cards
   - Shared widget library:
     - Buttons (`primary`, `secondary`, `icon`, `add_to_cart`)
     - Cards (`product`, `category`, `order`, `vendor`)
@@ -98,6 +103,7 @@ This repository now contains the initial implementation baseline for **Nema Stor
     - vendors
     - payment status writes
   - Remote data source helpers for collection access
+  - Offline demo fallback store when Firebase is unavailable
 - Domain layer skeleton:
   - Base entity/repository/use-case contracts
 - CI:
@@ -114,10 +120,10 @@ The project follows:
 
 ## Next implementation steps
 
-1. Add fine-grained role policies for nested routes and deep links.
-2. Harden role-based route policies and deep-link safeguards.
-3. Add deeper coverage for auth/cart/checkout integration scenarios.
-4. Add audit trails for moderation and order status transitions.
+1. Harden role-based route policies and deep-link safeguards.
+2. Add deeper coverage for auth/cart/checkout integration scenarios.
+3. Add audit trails for moderation and order status transitions.
+4. Complete production Firebase setup and environment-specific configs.
 
 ## Notes
 

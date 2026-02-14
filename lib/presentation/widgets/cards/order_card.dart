@@ -14,6 +14,7 @@ class OrderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme colorScheme = Theme.of(context).colorScheme;
     return Card(
       child: ListTile(
         onTap: onTap,
@@ -24,10 +25,43 @@ class OrderCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: <Widget>[
             Text('${order.total.toStringAsFixed(0)} IQD'),
-            Text(order.status.name),
+            const SizedBox(height: 2),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: colorScheme.primary.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                _statusLabel(order.status),
+                style: TextStyle(
+                  fontSize: 11,
+                  color: colorScheme.primary,
+                ),
+              ),
+            ),
           ],
         ),
       ),
     );
+  }
+
+  String _statusLabel(OrderStatus status) {
+    switch (status) {
+      case OrderStatus.pending:
+        return 'انتظار';
+      case OrderStatus.confirmed:
+        return 'مؤكد';
+      case OrderStatus.processing:
+        return 'تجهيز';
+      case OrderStatus.shipped:
+        return 'شحن';
+      case OrderStatus.delivered:
+        return 'مكتمل';
+      case OrderStatus.cancelled:
+        return 'ملغي';
+      case OrderStatus.returned:
+        return 'مرتجع';
+    }
   }
 }
