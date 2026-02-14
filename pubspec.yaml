@@ -1,18 +1,13 @@
-name: faz3a_app
+name: naama_store
 version: 1.0.0
+description: "Naama Store Flutter application."
 
 environment:
-  sdk: ">=2.12.0 <3.0.0"
+  sdk: ">=3.0.0 <4.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  provider: ^6.0.0
-  http: ^0.13.3
-  shared_preferences: ^2.0.6
-  flutter_svg: ^1.0.3
-  image_picker: ^0.8.4
-  dio: ^5.0.0
 
 dev_dependencies:
   flutter_test:
