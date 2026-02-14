@@ -147,6 +147,20 @@ class FirebaseAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<void> updateUserProfile(UserModel user) async {
+    if (!isFirebaseReady) {
+      throw const AuthException('Firebase is not initialized.');
+    }
+    await _dataSource.usersCollection().doc(user.id).set(
+      <String, dynamic>{
+        ...user.toJson(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      },
+      SetOptions(merge: true),
+    );
+  }
+
+  @override
   Future<void> logout() async {
     if (!isFirebaseReady) {
       return;

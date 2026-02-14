@@ -1,4 +1,4 @@
-# Nema Store - Technical Foundation (Phases 1-14)
+# Nema Store - Technical Foundation (Phases 1-15)
 
 This repository now contains the initial implementation baseline for **Nema Store**, following the submitted architecture report.
 
@@ -46,6 +46,12 @@ This repository now contains the initial implementation baseline for **Nema Stor
       - vendor orders list
       - vendor order details + status actions
       - admin orders management + status actions
+    - Profile and account management:
+      - profile overview screen
+      - edit profile form (persisted via repository)
+      - addresses list + add address form
+      - wishlist screen
+      - settings screen (theme + reset password + logout)
   - Shared widget library:
     - Buttons (`primary`, `secondary`, `icon`, `add_to_cart`)
     - Cards (`product`, `category`, `order`, `vendor`)
@@ -101,7 +107,7 @@ The project follows:
 
 1. Add fine-grained role policies for nested routes and deep links.
 2. Replace remaining placeholder screens with production UI and provider wiring.
-3. Continue replacing remaining profile/settings/vendor finance/ads placeholders.
+3. Continue replacing remaining onboarding/search/vendor-finance/vendor-ads/admin-finance/admin-categories placeholders.
 4. Add deeper coverage for auth/cart/checkout integration scenarios.
 
 ## Notes

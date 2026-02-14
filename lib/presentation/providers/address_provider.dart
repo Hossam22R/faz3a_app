@@ -30,4 +30,31 @@ class AddressProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<bool> saveAddress(AddressModel address) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+    try {
+      await _addressRepository.upsertAddress(address);
+      final int index = _addresses.indexWhere((AddressModel item) => item.id == address.id);
+      if (index >= 0) {
+        _addresses[index] = address;
+      } else {
+        _addresses = <AddressModel>[address, ..._addresses];
+      }
+      if (address.isDefault) {
+        _addresses = _addresses
+            .map((AddressModel item) => item.id == address.id ? item : item.copyWith(isDefault: false))
+            .toList();
+      }
+      return true;
+    } catch (error) {
+      _errorMessage = error.toString();
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 }

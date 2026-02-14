@@ -101,6 +101,40 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> updateProfile({
+    required String fullName,
+    required String email,
+    required String phone,
+  }) async {
+    final UserModel? existing = _currentUser;
+    if (existing == null) {
+      _errorMessage = 'No authenticated user.';
+      notifyListeners();
+      return false;
+    }
+
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+    try {
+      final UserModel updated = existing.copyWith(
+        fullName: fullName.trim(),
+        email: email.trim(),
+        phone: phone.trim(),
+        updatedAt: DateTime.now(),
+      );
+      await _authRepository.updateUserProfile(updated);
+      _currentUser = updated;
+      return true;
+    } catch (error) {
+      _errorMessage = error.toString();
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   Future<bool> sendPasswordResetEmail(String email) async {
     _isLoading = true;
     _errorMessage = null;
