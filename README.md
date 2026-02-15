@@ -39,6 +39,7 @@
 - `lib/ai/forex/services/forex_alert_notification_bridge.dart`
 - `lib/ai/forex/agents/forex_analysis_agent.dart`
 - `lib/ai/forex/controllers/live_forex_monitor_controller.dart`
+- `lib/ai/forex/ui/forex_live_monitor_route_page.dart`
 - `lib/ai/forex/ui/forex_monitor_page.dart`
 - `lib/ai/forex/forex_analysis.dart` (Barrel export)
 
@@ -223,6 +224,7 @@ final controller = LiveForexMonitorController(
 تمت إضافة صفحة جاهزة:
 
 - `ForexMonitorPage`
+- `ForexLiveMonitorRoutePage` (جاهزة للـ Route وتبني كل الـ dependencies تلقائيًا)
 
 مثال استخدام داخل `MaterialApp`:
 
@@ -241,6 +243,38 @@ MaterialApp(
 - ملاحظة المخاطر
 - آخر أخطاء الجلب (إن وجدت)
 - سجل التنبيهات بالكامل
+
+### Route + Provider wiring جاهز
+
+يمكنك إضافتها مباشرة داخل `MaterialApp`:
+
+```dart
+import 'package:faz3a_app/ai/forex/forex_analysis.dart';
+
+MaterialApp(
+  routes: {
+    '/forex-monitor': (_) => ForexLiveMonitorRoutePage(
+          apiKey: const String.fromEnvironment('TWELVE_DATA_API_KEY'),
+          symbol: 'EURUSD',
+          timeframe: 'M15',
+          title: 'EURUSD Live Monitor',
+        ),
+  },
+);
+```
+
+والتنقل إليها:
+
+```dart
+Navigator.of(context).pushNamed('/forex-monitor');
+```
+
+هذه الصفحة تقوم تلقائيًا بـ:
+
+- إنشاء `TwelveDataForexDataSource`
+- إنشاء `LiveForexSignalMonitor`
+- إنشاء `LiveForexMonitorController` مع حفظ التاريخ
+- ربط Local Notifications (اختياري عبر `enableLocalNotifications`)
 
 ## تنبيهات نظام حقيقية (Local Notifications)
 
