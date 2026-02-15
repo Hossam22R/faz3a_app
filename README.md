@@ -34,10 +34,12 @@
 - `lib/ai/forex/services/twelve_data_forex_data_source.dart`
 - `lib/ai/forex/services/live_forex_analysis_service.dart`
 - `lib/ai/forex/services/live_forex_signal_monitor.dart`
+- `lib/ai/forex/services/forex_alert_history_store.dart`
 - `lib/ai/forex/services/forex_local_notifications_service.dart`
 - `lib/ai/forex/services/forex_alert_notification_bridge.dart`
 - `lib/ai/forex/agents/forex_analysis_agent.dart`
 - `lib/ai/forex/controllers/live_forex_monitor_controller.dart`
+- `lib/ai/forex/ui/forex_monitor_page.dart`
 - `lib/ai/forex/forex_analysis.dart` (Barrel export)
 
 ## مثال استخدام سريع
@@ -197,6 +199,48 @@ Future<void> setupMonitor() async {
 - `start()` / `stop()` / `refreshNow()`
 
 يمكن استخدامه مباشرة مع `provider` و `ChangeNotifierProvider`.
+
+### حفظ سجل التنبيهات محليًا (SharedPreferences)
+
+```dart
+final monitor = LiveForexSignalMonitor(
+  analysisService: liveService,
+  symbol: 'EURUSD',
+  timeframe: 'M15',
+);
+
+final controller = LiveForexMonitorController(
+  monitor: monitor,
+  alertHistoryStore: ForexAlertHistoryStore(),
+  maxPersistedAlerts: 300,
+);
+```
+
+بهذا الشكل، كل تنبيه جديد يتم حفظه تلقائيًا، ويعاد تحميله عند فتح التطبيق.
+
+## صفحة Flutter جاهزة لعرض المراقبة + السجل
+
+تمت إضافة صفحة جاهزة:
+
+- `ForexMonitorPage`
+
+مثال استخدام داخل `MaterialApp`:
+
+```dart
+MaterialApp(
+  home: ForexMonitorPage(
+    controller: controller,
+    title: 'EURUSD Monitor',
+  ),
+);
+```
+
+الصفحة تعرض:
+
+- الإشارة الحالية ونسبة الثقة
+- ملاحظة المخاطر
+- آخر أخطاء الجلب (إن وجدت)
+- سجل التنبيهات بالكامل
 
 ## تنبيهات نظام حقيقية (Local Notifications)
 

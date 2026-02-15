@@ -25,6 +25,25 @@ class ForexSignalAlert {
     required this.createdAt,
   });
 
+  factory ForexSignalAlert.fromJson(Map<String, dynamic> json) {
+    final String signalRaw = json['signal']?.toString() ?? 'NEUTRAL';
+    final String? previousSignalRaw = json['previousSignal']?.toString();
+    final String typeRaw = json['type']?.toString() ?? 'signalChanged';
+
+    return ForexSignalAlert(
+      symbol: json['symbol']?.toString() ?? '',
+      timeframe: json['timeframe']?.toString() ?? '',
+      signal: _parseSignal(signalRaw),
+      previousSignal:
+          previousSignalRaw == null ? null : _parseSignal(previousSignalRaw),
+      type: _parseType(typeRaw),
+      confidence: _toDouble(json['confidence']),
+      message: json['message']?.toString() ?? '',
+      reasons: _toStringList(json['reasons']),
+      createdAt: _parseDateTime(json['createdAt']),
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'symbol': symbol,
@@ -57,5 +76,47 @@ class ForexSignalAlert {
       case ForexAlertType.strongSignal:
         return 'strongSignal';
     }
+  }
+
+  static ForexSignal _parseSignal(String raw) {
+    final String normalized = raw.trim().toUpperCase();
+    switch (normalized) {
+      case 'BUY':
+        return ForexSignal.buy;
+      case 'SELL':
+        return ForexSignal.sell;
+      case 'NEUTRAL':
+      default:
+        return ForexSignal.neutral;
+    }
+  }
+
+  static ForexAlertType _parseType(String raw) {
+    final String normalized = raw.trim();
+    if (normalized == 'strongSignal') {
+      return ForexAlertType.strongSignal;
+    }
+
+    return ForexAlertType.signalChanged;
+  }
+
+  static double _toDouble(dynamic value) {
+    if (value is num) {
+      return value.toDouble();
+    }
+    return double.tryParse(value?.toString() ?? '') ?? 0.0;
+  }
+
+  static DateTime _parseDateTime(dynamic value) {
+    final String raw = value?.toString() ?? '';
+    final DateTime? parsed = DateTime.tryParse(raw);
+    return parsed ?? DateTime.now().toUtc();
+  }
+
+  static List<String> _toStringList(dynamic value) {
+    if (value is List) {
+      return value.map((dynamic item) => item.toString()).toList(growable: false);
+    }
+    return const <String>[];
   }
 }
