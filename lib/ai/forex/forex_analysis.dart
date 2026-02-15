@@ -1,9 +1,12 @@
 export 'agents/forex_analysis_agent.dart';
+export 'controllers/forex_monitor_settings_controller.dart';
 export 'controllers/live_forex_monitor_controller.dart';
 export 'models/forex_analysis_report.dart';
 export 'models/forex_candle.dart';
+export 'models/forex_monitor_settings.dart';
 export 'models/forex_signal_alert.dart';
 export 'services/forex_alert_history_store.dart';
+export 'services/forex_monitor_settings_store.dart';
 export 'services/forex_market_data_source.dart';
 export 'services/forex_alert_notification_bridge.dart';
 export 'services/forex_local_notifications_service.dart';
@@ -13,3 +16,4 @@ export 'services/technical_indicators.dart';
 export 'services/twelve_data_forex_data_source.dart';
 export 'ui/forex_live_monitor_route_page.dart';
 export 'ui/forex_monitor_page.dart';
+export 'ui/forex_monitor_settings_page.dart';

@@ -29,18 +29,22 @@
 
 - `lib/ai/forex/models/forex_candle.dart`
 - `lib/ai/forex/models/forex_analysis_report.dart`
+- `lib/ai/forex/models/forex_monitor_settings.dart`
 - `lib/ai/forex/services/technical_indicators.dart`
 - `lib/ai/forex/services/forex_market_data_source.dart`
 - `lib/ai/forex/services/twelve_data_forex_data_source.dart`
 - `lib/ai/forex/services/live_forex_analysis_service.dart`
 - `lib/ai/forex/services/live_forex_signal_monitor.dart`
 - `lib/ai/forex/services/forex_alert_history_store.dart`
+- `lib/ai/forex/services/forex_monitor_settings_store.dart`
 - `lib/ai/forex/services/forex_local_notifications_service.dart`
 - `lib/ai/forex/services/forex_alert_notification_bridge.dart`
 - `lib/ai/forex/agents/forex_analysis_agent.dart`
+- `lib/ai/forex/controllers/forex_monitor_settings_controller.dart`
 - `lib/ai/forex/controllers/live_forex_monitor_controller.dart`
 - `lib/ai/forex/ui/forex_live_monitor_route_page.dart`
 - `lib/ai/forex/ui/forex_monitor_page.dart`
+- `lib/ai/forex/ui/forex_monitor_settings_page.dart`
 - `lib/ai/forex/forex_analysis.dart` (Barrel export)
 
 ## مثال استخدام سريع
@@ -275,6 +279,54 @@ Navigator.of(context).pushNamed('/forex-monitor');
 - إنشاء `LiveForexSignalMonitor`
 - إنشاء `LiveForexMonitorController` مع حفظ التاريخ
 - ربط Local Notifications (اختياري عبر `enableLocalNotifications`)
+
+## واجهة إعدادات جاهزة داخل التطبيق
+
+تمت إضافة صفحة إعدادات كاملة:
+
+- `ForexMonitorSettingsPage`
+
+وتدعم:
+
+- حفظ الإعدادات في `SharedPreferences`
+- تعديل API Key / Symbol / Timeframe
+- تعديل poll interval / candles limit / confidence
+- تشغيل شاشة المراقبة مباشرة من الإعدادات
+
+### استخدام مباشر كـ Route
+
+```dart
+MaterialApp(
+  routes: {
+    '/forex-settings': (_) => const ForexMonitorSettingsPage(),
+  },
+);
+```
+
+### فتح شاشة المراقبة من إعدادات محفوظة
+
+```dart
+final settings = ForexMonitorSettings(
+  apiKey: const String.fromEnvironment('TWELVE_DATA_API_KEY'),
+  symbol: 'GBPUSD',
+  timeframe: 'M15',
+  pollIntervalMinutes: 5,
+  candlesLimit: 180,
+  strongSignalConfidence: 72,
+  maxPersistedAlerts: 300,
+  enableLocalNotifications: true,
+  autoStart: true,
+);
+
+Navigator.of(context).push(
+  MaterialPageRoute(
+    builder: (_) => ForexLiveMonitorRoutePage.fromSettings(
+      settings: settings,
+      title: 'GBPUSD Monitor',
+    ),
+  ),
+);
+```
 
 ## تنبيهات نظام حقيقية (Local Notifications)
 

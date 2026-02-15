@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../controllers/live_forex_monitor_controller.dart';
+import '../models/forex_monitor_settings.dart';
 import '../services/forex_alert_history_store.dart';
 import '../services/forex_alert_notification_bridge.dart';
 import '../services/forex_local_notifications_service.dart';
@@ -36,6 +37,26 @@ class ForexLiveMonitorRoutePage extends StatefulWidget {
     this.autoStart = true,
   }) : super(key: key);
 
+  factory ForexLiveMonitorRoutePage.fromSettings({
+    Key? key,
+    required ForexMonitorSettings settings,
+    String title = 'Forex Live Monitor',
+  }) {
+    return ForexLiveMonitorRoutePage(
+      key: key,
+      apiKey: settings.apiKey,
+      symbol: settings.symbol,
+      timeframe: settings.timeframe,
+      title: title,
+      pollInterval: settings.pollInterval,
+      candlesLimit: settings.candlesLimit,
+      strongSignalConfidence: settings.strongSignalConfidence,
+      maxPersistedAlerts: settings.maxPersistedAlerts,
+      enableLocalNotifications: settings.enableLocalNotifications,
+      autoStart: settings.autoStart,
+    );
+  }
+
   @override
   State<ForexLiveMonitorRoutePage> createState() =>
       _ForexLiveMonitorRoutePageState();
@@ -43,7 +64,6 @@ class ForexLiveMonitorRoutePage extends StatefulWidget {
 
 class _ForexLiveMonitorRoutePageState extends State<ForexLiveMonitorRoutePage> {
   TwelveDataForexDataSource? _dataSource;
-  LiveForexSignalMonitor? _monitor;
   LiveForexMonitorController? _controller;
   ForexAlertNotificationBridge? _notificationBridge;
   Object? _setupError;
@@ -135,7 +155,6 @@ class _ForexLiveMonitorRoutePageState extends State<ForexLiveMonitorRoutePage> {
       }
 
       _dataSource = dataSource;
-      _monitor = monitor;
       _controller = controller;
       _notificationBridge = bridge;
 
@@ -168,7 +187,6 @@ class _ForexLiveMonitorRoutePageState extends State<ForexLiveMonitorRoutePage> {
 
     _controller?.dispose();
     _controller = null;
-    _monitor = null;
 
     _dataSource?.dispose();
     _dataSource = null;
