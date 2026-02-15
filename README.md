@@ -25,6 +25,9 @@
 - `lib/ai/forex/models/forex_candle.dart`
 - `lib/ai/forex/models/forex_analysis_report.dart`
 - `lib/ai/forex/services/technical_indicators.dart`
+- `lib/ai/forex/services/forex_market_data_source.dart`
+- `lib/ai/forex/services/twelve_data_forex_data_source.dart`
+- `lib/ai/forex/services/live_forex_analysis_service.dart`
 - `lib/ai/forex/agents/forex_analysis_agent.dart`
 - `lib/ai/forex/forex_analysis.dart` (Barrel export)
 
@@ -76,6 +79,57 @@ final report = agent.analyzeFromJson(
   ],
 );
 ```
+
+## ربط الوكيل ببيانات السوق الحية (Twelve Data)
+
+1) أنشئ API Key من:
+
+- https://twelvedata.com/
+
+2) اربط مزود البيانات مع الوكيل:
+
+```dart
+import 'package:faz3a_app/ai/forex/forex_analysis.dart';
+
+Future<void> runLive() async {
+  final dataSource = TwelveDataForexDataSource(
+    apiKey: 'YOUR_TWELVE_DATA_API_KEY',
+  );
+
+  final liveService = LiveForexAnalysisService(
+    marketDataSource: dataSource,
+  );
+
+  final report = await liveService.analyzeLive(
+    symbol: 'EURUSD', // او EUR/USD
+    timeframe: 'H1',
+    candlesLimit: 180,
+  );
+
+  print(report.toJson());
+  dataSource.dispose();
+}
+```
+
+### استخدام المفتاح من dart-define (اختياري)
+
+```dart
+final dataSource = TwelveDataForexDataSource.fromEnvironment();
+```
+
+وشغّل التطبيق بهذا الشكل:
+
+```bash
+flutter run --dart-define=TWELVE_DATA_API_KEY=YOUR_TWELVE_DATA_API_KEY
+```
+
+### الفواصل الزمنية المدعومة (timeframe)
+
+- `M1`, `M5`, `M15`, `M30`, `M45`
+- `H1`, `H2`, `H4`, `H8`, `H12`
+- `D1`, `W1`, `MN1`
+
+> ملاحظة: الوكيل يحتاج 60 شمعة على الأقل للتحليل.
 
 ## شكل كل شمعة مطلوب
 
