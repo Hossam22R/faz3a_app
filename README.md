@@ -45,6 +45,7 @@
 - `lib/ai/forex/ui/forex_live_monitor_route_page.dart`
 - `lib/ai/forex/ui/forex_monitor_page.dart`
 - `lib/ai/forex/ui/forex_monitor_settings_page.dart`
+- `lib/ai/forex/ui/forex_monitor_workspace_page.dart`
 - `lib/ai/forex/forex_analysis.dart` (Barrel export)
 
 ## مثال استخدام سريع
@@ -326,6 +327,38 @@ Navigator.of(context).push(
     ),
   ),
 );
+```
+
+## صفحة موحدة (Dashboard) للمراقبة + الإعدادات
+
+تمت إضافة صفحة:
+
+- `ForexMonitorWorkspacePage`
+
+وتوفر:
+
+- تبويب Monitor
+- تبويب Settings
+- إعادة بناء شاشة المراقبة تلقائيًا بعد حفظ الإعدادات
+- استخدام `TWELVE_DATA_API_KEY` تلقائيًا كقيمة أولية إذا لم تكن الإعدادات محفوظة
+
+### تشغيل سريع كـ Route
+
+```dart
+MaterialApp(
+  routes: {
+    '/forex-dashboard': (_) => const ForexMonitorWorkspacePage(
+          monitorTitle: 'Forex Monitor',
+          settingsTitle: 'Forex Settings',
+        ),
+  },
+);
+```
+
+### فتح صفحة الـ Dashboard
+
+```dart
+Navigator.of(context).pushNamed('/forex-dashboard');
 ```
 
 ## تنبيهات نظام حقيقية (Local Notifications)

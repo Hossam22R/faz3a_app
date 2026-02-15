@@ -10,6 +10,7 @@ class ForexMonitorSettingsPage extends StatefulWidget {
   final bool allowOpenMonitor;
   final String title;
   final String monitorTitle;
+  final ValueChanged<ForexMonitorSettings>? onSettingsSaved;
 
   const ForexMonitorSettingsPage({
     Key? key,
@@ -18,6 +19,7 @@ class ForexMonitorSettingsPage extends StatefulWidget {
     this.allowOpenMonitor = true,
     this.title = 'Forex Monitor Settings',
     this.monitorTitle = 'Forex Live Monitor',
+    this.onSettingsSaved,
   }) : super(key: key);
 
   @override
@@ -329,6 +331,8 @@ class _ForexMonitorSettingsPageState extends State<ForexMonitorSettingsPage> {
       return;
     }
 
+    widget.onSettingsSaved?.call(settings);
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Settings saved')),
     );
@@ -344,6 +348,8 @@ class _ForexMonitorSettingsPageState extends State<ForexMonitorSettingsPage> {
     if (!mounted || _controller.lastError != null) {
       return;
     }
+
+    widget.onSettingsSaved?.call(settings);
 
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -363,6 +369,8 @@ class _ForexMonitorSettingsPageState extends State<ForexMonitorSettingsPage> {
     if (!mounted || _controller.lastError != null) {
       return;
     }
+
+    widget.onSettingsSaved?.call(_controller.settings);
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Defaults restored')),

@@ -17,3 +17,4 @@ export 'services/twelve_data_forex_data_source.dart';
 export 'ui/forex_live_monitor_route_page.dart';
 export 'ui/forex_monitor_page.dart';
 export 'ui/forex_monitor_settings_page.dart';
+export 'ui/forex_monitor_workspace_page.dart';
