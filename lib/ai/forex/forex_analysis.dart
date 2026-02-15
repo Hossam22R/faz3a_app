@@ -4,6 +4,8 @@ export 'models/forex_analysis_report.dart';
 export 'models/forex_candle.dart';
 export 'models/forex_signal_alert.dart';
 export 'services/forex_market_data_source.dart';
+export 'services/forex_alert_notification_bridge.dart';
+export 'services/forex_local_notifications_service.dart';
 export 'services/live_forex_analysis_service.dart';
 export 'services/live_forex_signal_monitor.dart';
 export 'services/technical_indicators.dart';

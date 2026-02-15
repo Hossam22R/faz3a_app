@@ -2,6 +2,11 @@
 
 هذا المشروع يحتوي الآن على وكيل ذكاء اصطناعي مخصص **فقط لتحليل سوق الفوركس**.
 
+## المتطلبات
+
+- Flutter/Dart بمستوى: `>=2.17.0 <3.0.0`
+- تم إضافة اعتماد: `flutter_local_notifications`
+
 ## ماذا يفعل الوكيل؟
 
 - يستقبل بيانات الشموع السعرية (OHLCV).
@@ -28,7 +33,11 @@
 - `lib/ai/forex/services/forex_market_data_source.dart`
 - `lib/ai/forex/services/twelve_data_forex_data_source.dart`
 - `lib/ai/forex/services/live_forex_analysis_service.dart`
+- `lib/ai/forex/services/live_forex_signal_monitor.dart`
+- `lib/ai/forex/services/forex_local_notifications_service.dart`
+- `lib/ai/forex/services/forex_alert_notification_bridge.dart`
 - `lib/ai/forex/agents/forex_analysis_agent.dart`
+- `lib/ai/forex/controllers/live_forex_monitor_controller.dart`
 - `lib/ai/forex/forex_analysis.dart` (Barrel export)
 
 ## مثال استخدام سريع
@@ -188,6 +197,43 @@ Future<void> setupMonitor() async {
 - `start()` / `stop()` / `refreshNow()`
 
 يمكن استخدامه مباشرة مع `provider` و `ChangeNotifierProvider`.
+
+## تنبيهات نظام حقيقية (Local Notifications)
+
+تمت إضافة خدمة إشعارات محلية يمكن ربطها مباشرة مع تنبيهات الوكيل.
+
+```dart
+import 'package:flutter/widgets.dart';
+import 'package:faz3a_app/ai/forex/forex_analysis.dart';
+
+Future<void> setupLiveNotifications() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final dataSource = TwelveDataForexDataSource(apiKey: 'YOUR_API_KEY');
+  final liveService = LiveForexAnalysisService(marketDataSource: dataSource);
+
+  final monitor = LiveForexSignalMonitor(
+    analysisService: liveService,
+    symbol: 'EURUSD',
+    timeframe: 'M15',
+    config: const LiveForexMonitorConfig(
+      pollInterval: Duration(minutes: 5),
+      strongSignalConfidence: 72,
+    ),
+  );
+
+  final notificationsService = ForexLocalNotificationsService();
+  final bridge = ForexAlertNotificationBridge(
+    monitor: monitor,
+    notificationsService: notificationsService,
+  );
+
+  await bridge.start();
+  monitor.start(runImmediately: true);
+}
+```
+
+عند وصول `alert` من الوكيل، يتم إرسال إشعار نظام تلقائيًا.
 
 ## شكل كل شمعة مطلوب
 

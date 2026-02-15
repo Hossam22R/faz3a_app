@@ -2,7 +2,7 @@ name: faz3a_app
 version: 1.0.0
 
 environment:
-  sdk: ">=2.12.0 <3.0.0"
+  sdk: ">=2.17.0 <3.0.0"
 
 dependencies:
   flutter:
@@ -13,6 +13,7 @@ dependencies:
   flutter_svg: ^1.0.3
   image_picker: ^0.8.4
   dio: ^5.0.0
+  flutter_local_notifications: ^14.0.0
 
 dev_dependencies:
   flutter_test:
