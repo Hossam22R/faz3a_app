@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../controllers/forex_watchlist_controller.dart';
+import '../models/forex_analysis_report.dart';
 import '../models/forex_watchlist_item.dart';
 
 class ForexWatchlistPage extends StatefulWidget {
@@ -10,6 +11,9 @@ class ForexWatchlistPage extends StatefulWidget {
   final ValueChanged<List<ForexWatchlistItem>>? onWatchlistChanged;
   final bool autoLoad;
   final bool emitInitialChange;
+  final Map<String, ForexAnalysisReport> latestReportsByItemId;
+  final bool scannerRunning;
+  final String? scannerStatusMessage;
 
   const ForexWatchlistPage({
     Key? key,
@@ -19,6 +23,9 @@ class ForexWatchlistPage extends StatefulWidget {
     this.onWatchlistChanged,
     this.autoLoad = true,
     this.emitInitialChange = false,
+    this.latestReportsByItemId = const <String, ForexAnalysisReport>{},
+    this.scannerRunning = false,
+    this.scannerStatusMessage,
   }) : super(key: key);
 
   @override
@@ -108,6 +115,11 @@ class _ForexWatchlistPageState extends State<ForexWatchlistPage> {
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: <Widget>[
+                if (widget.scannerStatusMessage != null)
+                  _ScannerStatusBanner(
+                    isRunning: widget.scannerRunning,
+                    message: widget.scannerStatusMessage!,
+                  ),
                 if (error != null)
                   _InlineErrorBanner(
                     error: error.toString(),
@@ -121,6 +133,12 @@ class _ForexWatchlistPageState extends State<ForexWatchlistPage> {
                           separatorBuilder: (_, __) => const Divider(height: 1),
                           itemBuilder: (_, int index) {
                             final ForexWatchlistItem item = items[index];
+                            final ForexAnalysisReport? latestReport =
+                                widget.latestReportsByItemId[item.id];
+                            final String signalText = latestReport == null
+                                ? 'no recent scan'
+                                : '${latestReport.signalLabel} '
+                                    '${latestReport.confidence.toStringAsFixed(1)}%';
                             return ListTile(
                               leading: Icon(
                                 item.isPrimary ? Icons.star : Icons.star_border,
@@ -129,7 +147,8 @@ class _ForexWatchlistPageState extends State<ForexWatchlistPage> {
                               title: Text(item.displayName),
                               subtitle: Text(
                                 '${item.symbol} • ${item.timeframe}'
-                                '${item.isEnabled ? '' : ' • disabled'}',
+                                '${item.isEnabled ? '' : ' • disabled'}'
+                                ' • $signalText',
                               ),
                               onTap: () => _editPair(item),
                               trailing: Row(
@@ -440,6 +459,31 @@ class _InlineErrorBanner extends StatelessWidget {
           onPressed: onDismiss,
           child: const Text('Dismiss'),
         ),
+      ),
+    );
+  }
+}
+
+class _ScannerStatusBanner extends StatelessWidget {
+  final bool isRunning;
+  final String message;
+
+  const _ScannerStatusBanner({
+    Key? key,
+    required this.isRunning,
+    required this.message,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final Color color = isRunning ? Colors.blue.shade50 : Colors.orange.shade50;
+    final IconData icon = isRunning ? Icons.sync : Icons.pause_circle_outline;
+
+    return Material(
+      color: color,
+      child: ListTile(
+        leading: Icon(icon),
+        title: Text(message),
       ),
     );
   }

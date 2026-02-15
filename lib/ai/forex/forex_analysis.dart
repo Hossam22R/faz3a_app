@@ -15,6 +15,7 @@ export 'services/forex_alert_notification_bridge.dart';
 export 'services/forex_local_notifications_service.dart';
 export 'services/live_forex_analysis_service.dart';
 export 'services/live_forex_signal_monitor.dart';
+export 'services/multi_pair_forex_signal_monitor.dart';
 export 'services/technical_indicators.dart';
 export 'services/twelve_data_forex_data_source.dart';
 export 'ui/forex_live_monitor_route_page.dart';

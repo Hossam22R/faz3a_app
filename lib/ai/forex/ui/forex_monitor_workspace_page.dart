@@ -1,9 +1,17 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../controllers/forex_monitor_settings_controller.dart';
 import '../controllers/forex_watchlist_controller.dart';
+import '../models/forex_analysis_report.dart';
 import '../models/forex_monitor_settings.dart';
 import '../models/forex_watchlist_item.dart';
+import '../services/forex_alert_notification_bridge.dart';
+import '../services/forex_local_notifications_service.dart';
+import '../services/live_forex_analysis_service.dart';
+import '../services/multi_pair_forex_signal_monitor.dart';
+import '../services/twelve_data_forex_data_source.dart';
 import 'forex_live_monitor_route_page.dart';
 import 'forex_monitor_settings_page.dart';
 import 'forex_watchlist_page.dart';
@@ -44,6 +52,18 @@ class _ForexMonitorWorkspacePageState extends State<ForexMonitorWorkspacePage> {
   int _selectedTab = 0;
   int _monitorRevision = 0;
   bool _loaded = false;
+  int _scannerRestartToken = 0;
+
+  TwelveDataForexDataSource? _scannerDataSource;
+  MultiPairForexSignalMonitor? _scannerMonitor;
+  ForexAlertNotificationBridge? _scannerNotificationBridge;
+  StreamSubscription<ForexWatchlistReportEvent>? _scannerReportsSubscription;
+  StreamSubscription<ForexWatchlistErrorEvent>? _scannerErrorsSubscription;
+
+  final Map<String, ForexAnalysisReport> _latestReportsByWatchlistItemId =
+      <String, ForexAnalysisReport>{};
+  bool _scannerRunning = false;
+  String? _scannerStatusMessage;
 
   @override
   void initState() {
@@ -60,6 +80,7 @@ class _ForexMonitorWorkspacePageState extends State<ForexMonitorWorkspacePage> {
 
   @override
   void dispose() {
+    _disposeScannerResources();
     _settingsController.removeListener(_onSettingsControllerChanged);
     _watchlistController.removeListener(_onWatchlistControllerChanged);
     if (_ownsSettingsController && widget.disposeController) {
@@ -87,6 +108,7 @@ class _ForexMonitorWorkspacePageState extends State<ForexMonitorWorkspacePage> {
     }
 
     await _seedWatchlistIfNeeded();
+    await _restartWatchlistScanner();
 
     if (!mounted) {
       return;
@@ -114,6 +136,144 @@ class _ForexMonitorWorkspacePageState extends State<ForexMonitorWorkspacePage> {
     await _watchlistController.add(seed);
   }
 
+  Future<void> _restartWatchlistScanner() async {
+    final int token = ++_scannerRestartToken;
+    _disposeScannerResources();
+    _latestReportsByWatchlistItemId.clear();
+
+    final ForexMonitorSettings settings = _settingsController.settings;
+    final List<ForexWatchlistItem> enabledItems = _watchlistController.items
+        .where((ForexWatchlistItem item) => item.isEnabled)
+        .toList(growable: false);
+
+    if (!mounted || token != _scannerRestartToken) {
+      return;
+    }
+
+    if (settings.apiKey.trim().isEmpty) {
+      setState(() {
+        _scannerRunning = false;
+        _scannerStatusMessage = 'Scanner paused: API key is missing.';
+      });
+      return;
+    }
+
+    if (enabledItems.isEmpty) {
+      setState(() {
+        _scannerRunning = false;
+        _scannerStatusMessage =
+            'Scanner paused: no enabled pairs in watchlist.';
+      });
+      return;
+    }
+
+    if (!settings.autoStart) {
+      setState(() {
+        _scannerRunning = false;
+        _scannerStatusMessage =
+            'Scanner paused: auto-start is disabled in settings.';
+      });
+      return;
+    }
+
+    try {
+      final TwelveDataForexDataSource dataSource =
+          TwelveDataForexDataSource(apiKey: settings.apiKey.trim());
+      final LiveForexAnalysisService analysisService =
+          LiveForexAnalysisService(marketDataSource: dataSource);
+      final MultiPairForexSignalMonitor scanner = MultiPairForexSignalMonitor(
+        analysisService: analysisService,
+        watchlistProvider: () => _watchlistController.items,
+        config: MultiPairForexMonitorConfig(
+          pollInterval: settings.pollInterval,
+          candlesLimit: settings.candlesLimit,
+          strongSignalConfidence: settings.strongSignalConfidence,
+        ),
+      );
+
+      _scannerDataSource = dataSource;
+      _scannerMonitor = scanner;
+
+      _scannerReportsSubscription =
+          scanner.reports.listen((ForexWatchlistReportEvent event) {
+        _latestReportsByWatchlistItemId[event.item.id] = event.report;
+        if (!mounted) {
+          return;
+        }
+        setState(() {});
+      });
+
+      _scannerErrorsSubscription =
+          scanner.errors.listen((ForexWatchlistErrorEvent event) {
+        if (!mounted) {
+          return;
+        }
+        setState(() {
+          _scannerStatusMessage =
+              'Scanner error on ${event.item.symbol} ${event.item.timeframe}.';
+        });
+      });
+
+      if (settings.enableLocalNotifications) {
+        final ForexAlertNotificationBridge bridge =
+            ForexAlertNotificationBridge.fromStream(
+          alertsStream: scanner.alerts,
+          notificationsService: ForexLocalNotificationsService(),
+          onNotificationError: (Object error) {
+            if (!mounted) {
+              return;
+            }
+            setState(() {
+              _scannerStatusMessage = 'Notification error: $error';
+            });
+          },
+        );
+        await bridge.start();
+        _scannerNotificationBridge = bridge;
+      }
+
+      if (!mounted || token != _scannerRestartToken) {
+        _disposeScannerResources();
+        return;
+      }
+
+      scanner.start(runImmediately: true);
+      setState(() {
+        _scannerRunning = true;
+        _scannerStatusMessage =
+            'Scanner running for ${enabledItems.length} enabled pair(s).';
+        _monitorRevision++;
+      });
+    } catch (error) {
+      _disposeScannerResources();
+      if (!mounted || token != _scannerRestartToken) {
+        return;
+      }
+      setState(() {
+        _scannerStatusMessage = 'Scanner failed to start: $error';
+      });
+    }
+  }
+
+  void _disposeScannerResources() {
+    _scannerReportsSubscription?.cancel();
+    _scannerReportsSubscription = null;
+
+    _scannerErrorsSubscription?.cancel();
+    _scannerErrorsSubscription = null;
+
+    _scannerNotificationBridge?.dispose();
+    _scannerNotificationBridge = null;
+
+    _scannerMonitor?.dispose();
+    _scannerMonitor = null;
+
+    _scannerDataSource?.dispose();
+    _scannerDataSource = null;
+
+    _scannerRunning = false;
+  }
+
   void _onSettingsControllerChanged() {
     if (!mounted) {
       return;
@@ -134,12 +294,14 @@ class _ForexMonitorWorkspacePageState extends State<ForexMonitorWorkspacePage> {
       _monitorRevision++;
       _selectedTab = 0;
     });
+    _restartWatchlistScanner();
   }
 
   void _handleWatchlistChanged(List<ForexWatchlistItem> _) {
     setState(() {
       _monitorRevision++;
     });
+    _restartWatchlistScanner();
   }
 
   @override
@@ -193,6 +355,9 @@ class _ForexMonitorWorkspacePageState extends State<ForexMonitorWorkspacePage> {
             disposeController: false,
             title: widget.watchlistTitle,
             autoLoad: false,
+            latestReportsByItemId: _latestReportsByWatchlistItemId,
+            scannerRunning: _scannerRunning,
+            scannerStatusMessage: _scannerStatusMessage,
             onWatchlistChanged: _handleWatchlistChanged,
           ),
         ],
@@ -259,12 +424,17 @@ class _ForexMonitorWorkspacePageState extends State<ForexMonitorWorkspacePage> {
     final ForexWatchlistItem? pair =
         _watchlistController.primaryEnabledItem ?? _watchlistController.firstEnabledItem;
 
-    final ForexMonitorSettings settings = pair == null
+    final ForexMonitorSettings selectedSettings = pair == null
         ? baseSettings
         : baseSettings.copyWith(
             symbol: pair.symbol,
             timeframe: pair.timeframe,
           );
+    final bool enableInlineNotifications =
+        selectedSettings.enableLocalNotifications && !_scannerRunning;
+    final ForexMonitorSettings settings = selectedSettings.copyWith(
+      enableLocalNotifications: enableInlineNotifications,
+    );
 
     final String monitorKey = <Object>[
       _monitorRevision,

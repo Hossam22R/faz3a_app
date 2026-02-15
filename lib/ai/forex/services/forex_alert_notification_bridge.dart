@@ -5,17 +5,23 @@ import 'forex_local_notifications_service.dart';
 import 'live_forex_signal_monitor.dart';
 
 class ForexAlertNotificationBridge {
-  final LiveForexSignalMonitor monitor;
+  final Stream<ForexSignalAlert> alertsStream;
   final ForexLocalNotificationsService notificationsService;
   final void Function(Object error)? onNotificationError;
 
   StreamSubscription<ForexSignalAlert>? _alertsSubscription;
 
   ForexAlertNotificationBridge({
-    required this.monitor,
+    required LiveForexSignalMonitor monitor,
     required this.notificationsService,
     this.onNotificationError,
-  });
+  }) : alertsStream = monitor.alerts;
+
+  ForexAlertNotificationBridge.fromStream({
+    required Stream<ForexSignalAlert> alertsStream,
+    required this.notificationsService,
+    this.onNotificationError,
+  }) : alertsStream = alertsStream;
 
   bool get isRunning => _alertsSubscription != null;
 
@@ -26,7 +32,7 @@ class ForexAlertNotificationBridge {
 
     await notificationsService.initialize();
 
-    _alertsSubscription = monitor.alerts.listen(_handleAlert);
+    _alertsSubscription = alertsStream.listen(_handleAlert);
   }
 
   void stop() {

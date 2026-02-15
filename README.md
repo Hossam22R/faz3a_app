@@ -36,6 +36,7 @@
 - `lib/ai/forex/services/twelve_data_forex_data_source.dart`
 - `lib/ai/forex/services/live_forex_analysis_service.dart`
 - `lib/ai/forex/services/live_forex_signal_monitor.dart`
+- `lib/ai/forex/services/multi_pair_forex_signal_monitor.dart`
 - `lib/ai/forex/services/forex_alert_history_store.dart`
 - `lib/ai/forex/services/forex_monitor_settings_store.dart`
 - `lib/ai/forex/services/forex_watchlist_store.dart`
@@ -380,6 +381,17 @@ Navigator.of(context).pushNamed('/forex-dashboard');
 1. الزوج الرئيسي المفعّل (Primary + Enabled)
 2. أول زوج مفعّل في الـ Watchlist
 3. إعدادات الزوج الافتراضية من `ForexMonitorSettings`
+
+### دورة تنبيهات موحدة لكل الـ Watchlist
+
+الـ Dashboard يشغّل الآن **scanner واحد** يمر على جميع الأزواج المفعّلة في الـ Watchlist
+كل فترة (`pollInterval`) ثم:
+
+- يجلب الشموع لكل زوج
+- يحلل كل زوج بنفس منطق الوكيل
+- يرسل تنبيهات Signal Change / Strong Signal لكل زوج
+
+هذا يعني أن التنبيهات أصبحت تغطي **كل الأزواج** بدل زوج واحد فقط.
 
 ## تنبيهات نظام حقيقية (Local Notifications)
 
