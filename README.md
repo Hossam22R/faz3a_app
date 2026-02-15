@@ -131,6 +131,64 @@ flutter run --dart-define=TWELVE_DATA_API_KEY=YOUR_TWELVE_DATA_API_KEY
 
 > ملاحظة: الوكيل يحتاج 60 شمعة على الأقل للتحليل.
 
+## جدولة التحليل تلقائيًا + تنبيهات الإشارة
+
+يمكنك تشغيل مراقب حي يفحص السوق كل فترة زمنية ويطلق تنبيهًا عند:
+
+- تغيّر الإشارة (`BUY`/`SELL`/`NEUTRAL`)
+- أو ظهور إشارة قوية (Confidence أعلى من حد معين)
+
+```dart
+import 'package:faz3a_app/ai/forex/forex_analysis.dart';
+
+Future<void> setupMonitor() async {
+  final dataSource = TwelveDataForexDataSource(apiKey: 'YOUR_API_KEY');
+  final liveService = LiveForexAnalysisService(marketDataSource: dataSource);
+
+  final monitor = LiveForexSignalMonitor(
+    analysisService: liveService,
+    symbol: 'EURUSD',
+    timeframe: 'M15',
+    config: const LiveForexMonitorConfig(
+      pollInterval: Duration(minutes: 5),
+      candlesLimit: 180,
+      strongSignalConfidence: 72,
+    ),
+  );
+
+  monitor.reports.listen((report) {
+    // تحديث واجهة المستخدم او حفظ التقرير
+    print('Report: ${report.toJson()}');
+  });
+
+  monitor.alerts.listen((alert) {
+    // هنا يمكنك ارسال Local Notification او عرض Snackbar
+    print('ALERT: ${alert.toJson()}');
+  });
+
+  monitor.errors.listen((error) {
+    print('Monitor Error: $error');
+  });
+
+  monitor.start(runImmediately: true);
+}
+```
+
+## ربط أسرع داخل Flutter عبر Controller
+
+يوجد Controller جاهز:
+
+- `LiveForexMonitorController`
+
+ويحتوي على:
+
+- `latestReport`
+- `latestAlert`
+- `lastError`
+- `start()` / `stop()` / `refreshNow()`
+
+يمكن استخدامه مباشرة مع `provider` و `ChangeNotifierProvider`.
+
 ## شكل كل شمعة مطلوب
 
 ```json
