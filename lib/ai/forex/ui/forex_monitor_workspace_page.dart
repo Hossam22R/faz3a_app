@@ -1,25 +1,32 @@
 import 'package:flutter/material.dart';
 
 import '../controllers/forex_monitor_settings_controller.dart';
+import '../controllers/forex_watchlist_controller.dart';
 import '../models/forex_monitor_settings.dart';
+import '../models/forex_watchlist_item.dart';
 import 'forex_live_monitor_route_page.dart';
 import 'forex_monitor_settings_page.dart';
+import 'forex_watchlist_page.dart';
 
 class ForexMonitorWorkspacePage extends StatefulWidget {
   final ForexMonitorSettingsController? settingsController;
+  final ForexWatchlistController? watchlistController;
   final bool disposeController;
   final int initialTabIndex;
   final String monitorTitle;
   final String settingsTitle;
+  final String watchlistTitle;
   final String fallbackApiKey;
 
   const ForexMonitorWorkspacePage({
     Key? key,
     this.settingsController,
+    this.watchlistController,
     this.disposeController = true,
     this.initialTabIndex = 0,
     this.monitorTitle = 'Forex Live Monitor',
     this.settingsTitle = 'Forex Monitor Settings',
+    this.watchlistTitle = 'Forex Watchlist',
     this.fallbackApiKey = const String.fromEnvironment('TWELVE_DATA_API_KEY'),
   }) : super(key: key);
 
@@ -30,7 +37,9 @@ class ForexMonitorWorkspacePage extends StatefulWidget {
 
 class _ForexMonitorWorkspacePageState extends State<ForexMonitorWorkspacePage> {
   late final ForexMonitorSettingsController _settingsController;
-  late final bool _ownsController;
+  late final ForexWatchlistController _watchlistController;
+  late final bool _ownsSettingsController;
+  late final bool _ownsWatchlistController;
 
   int _selectedTab = 0;
   int _monitorRevision = 0;
@@ -40,23 +49,31 @@ class _ForexMonitorWorkspacePageState extends State<ForexMonitorWorkspacePage> {
   void initState() {
     super.initState();
     _settingsController = widget.settingsController ?? ForexMonitorSettingsController();
-    _ownsController = widget.settingsController == null;
-    _selectedTab = widget.initialTabIndex.clamp(0, 1).toInt();
+    _watchlistController = widget.watchlistController ?? ForexWatchlistController();
+    _ownsSettingsController = widget.settingsController == null;
+    _ownsWatchlistController = widget.watchlistController == null;
+    _selectedTab = widget.initialTabIndex.clamp(0, 2).toInt();
     _settingsController.addListener(_onSettingsControllerChanged);
-    _loadSettings();
+    _watchlistController.addListener(_onWatchlistControllerChanged);
+    _initializeWorkspace();
   }
 
   @override
   void dispose() {
     _settingsController.removeListener(_onSettingsControllerChanged);
-    if (_ownsController && widget.disposeController) {
+    _watchlistController.removeListener(_onWatchlistControllerChanged);
+    if (_ownsSettingsController && widget.disposeController) {
       _settingsController.dispose();
+    }
+    if (_ownsWatchlistController && widget.disposeController) {
+      _watchlistController.dispose();
     }
     super.dispose();
   }
 
-  Future<void> _loadSettings() async {
+  Future<void> _initializeWorkspace() async {
     await _settingsController.load();
+    await _watchlistController.load();
     if (!mounted) {
       return;
     }
@@ -69,6 +86,8 @@ class _ForexMonitorWorkspacePageState extends State<ForexMonitorWorkspacePage> {
       await _settingsController.save();
     }
 
+    await _seedWatchlistIfNeeded();
+
     if (!mounted) {
       return;
     }
@@ -78,7 +97,31 @@ class _ForexMonitorWorkspacePageState extends State<ForexMonitorWorkspacePage> {
     });
   }
 
+  Future<void> _seedWatchlistIfNeeded() async {
+    if (_watchlistController.items.isNotEmpty) {
+      return;
+    }
+
+    final ForexMonitorSettings settings = _settingsController.settings;
+    final ForexWatchlistItem seed = ForexWatchlistItem.create(
+      symbol: settings.symbol,
+      timeframe: settings.timeframe,
+      label: 'Default Pair',
+      isEnabled: true,
+      isPrimary: true,
+    );
+
+    await _watchlistController.add(seed);
+  }
+
   void _onSettingsControllerChanged() {
+    if (!mounted) {
+      return;
+    }
+    setState(() {});
+  }
+
+  void _onWatchlistControllerChanged() {
     if (!mounted) {
       return;
     }
@@ -90,6 +133,12 @@ class _ForexMonitorWorkspacePageState extends State<ForexMonitorWorkspacePage> {
     setState(() {
       _monitorRevision++;
       _selectedTab = 0;
+    });
+  }
+
+  void _handleWatchlistChanged(List<ForexWatchlistItem> _) {
+    setState(() {
+      _monitorRevision++;
     });
   }
 
@@ -116,7 +165,7 @@ class _ForexMonitorWorkspacePageState extends State<ForexMonitorWorkspacePage> {
                 Text(error.toString(), textAlign: TextAlign.center),
                 const SizedBox(height: 12),
                 ElevatedButton(
-                  onPressed: _loadSettings,
+                  onPressed: _initializeWorkspace,
                   child: const Text('Retry'),
                 ),
               ],
@@ -139,6 +188,13 @@ class _ForexMonitorWorkspacePageState extends State<ForexMonitorWorkspacePage> {
             monitorTitle: widget.monitorTitle,
             onSettingsSaved: _handleSettingsSaved,
           ),
+          ForexWatchlistPage(
+            controller: _watchlistController,
+            disposeController: false,
+            title: widget.watchlistTitle,
+            autoLoad: false,
+            onWatchlistChanged: _handleWatchlistChanged,
+          ),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -157,14 +213,18 @@ class _ForexMonitorWorkspacePageState extends State<ForexMonitorWorkspacePage> {
             icon: Icon(Icons.settings),
             label: 'Settings',
           ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.format_list_bulleted),
+            label: 'Watchlist',
+          ),
         ],
       ),
     );
   }
 
   Widget _buildMonitorTab() {
-    final ForexMonitorSettings settings = _settingsController.settings;
-    if (settings.apiKey.trim().isEmpty) {
+    final ForexMonitorSettings baseSettings = _settingsController.settings;
+    if (baseSettings.apiKey.trim().isEmpty) {
       return Scaffold(
         appBar: AppBar(title: Text(widget.monitorTitle)),
         body: Center(
@@ -196,6 +256,16 @@ class _ForexMonitorWorkspacePageState extends State<ForexMonitorWorkspacePage> {
       );
     }
 
+    final ForexWatchlistItem? pair =
+        _watchlistController.primaryEnabledItem ?? _watchlistController.firstEnabledItem;
+
+    final ForexMonitorSettings settings = pair == null
+        ? baseSettings
+        : baseSettings.copyWith(
+            symbol: pair.symbol,
+            timeframe: pair.timeframe,
+          );
+
     final String monitorKey = <Object>[
       _monitorRevision,
       settings.apiKey,
@@ -207,6 +277,7 @@ class _ForexMonitorWorkspacePageState extends State<ForexMonitorWorkspacePage> {
       settings.maxPersistedAlerts,
       settings.enableLocalNotifications,
       settings.autoStart,
+      pair?.id ?? 'settings_pair',
     ].join('|');
 
     return ForexLiveMonitorRoutePage.fromSettings(

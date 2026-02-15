@@ -30,6 +30,7 @@
 - `lib/ai/forex/models/forex_candle.dart`
 - `lib/ai/forex/models/forex_analysis_report.dart`
 - `lib/ai/forex/models/forex_monitor_settings.dart`
+- `lib/ai/forex/models/forex_watchlist_item.dart`
 - `lib/ai/forex/services/technical_indicators.dart`
 - `lib/ai/forex/services/forex_market_data_source.dart`
 - `lib/ai/forex/services/twelve_data_forex_data_source.dart`
@@ -37,14 +38,17 @@
 - `lib/ai/forex/services/live_forex_signal_monitor.dart`
 - `lib/ai/forex/services/forex_alert_history_store.dart`
 - `lib/ai/forex/services/forex_monitor_settings_store.dart`
+- `lib/ai/forex/services/forex_watchlist_store.dart`
 - `lib/ai/forex/services/forex_local_notifications_service.dart`
 - `lib/ai/forex/services/forex_alert_notification_bridge.dart`
 - `lib/ai/forex/agents/forex_analysis_agent.dart`
 - `lib/ai/forex/controllers/forex_monitor_settings_controller.dart`
+- `lib/ai/forex/controllers/forex_watchlist_controller.dart`
 - `lib/ai/forex/controllers/live_forex_monitor_controller.dart`
 - `lib/ai/forex/ui/forex_live_monitor_route_page.dart`
 - `lib/ai/forex/ui/forex_monitor_page.dart`
 - `lib/ai/forex/ui/forex_monitor_settings_page.dart`
+- `lib/ai/forex/ui/forex_watchlist_page.dart`
 - `lib/ai/forex/ui/forex_monitor_workspace_page.dart`
 - `lib/ai/forex/forex_analysis.dart` (Barrel export)
 
@@ -339,6 +343,7 @@ Navigator.of(context).push(
 
 - تبويب Monitor
 - تبويب Settings
+- تبويب Watchlist (لإدارة عدة أزواج)
 - إعادة بناء شاشة المراقبة تلقائيًا بعد حفظ الإعدادات
 - استخدام `TWELVE_DATA_API_KEY` تلقائيًا كقيمة أولية إذا لم تكن الإعدادات محفوظة
 
@@ -360,6 +365,21 @@ MaterialApp(
 ```dart
 Navigator.of(context).pushNamed('/forex-dashboard');
 ```
+
+### إدارة عدة أزواج فوركس (Watchlist)
+
+الـ Dashboard الآن يدعم:
+
+- إضافة/تعديل/حذف أزواج متعددة
+- تحديد زوج رئيسي (Primary)
+- تعطيل/تفعيل أزواج بدون حذفها
+- إعادة تحميل المونيتور تلقائيًا عند تغيير الزوج الرئيسي
+
+الزوج المعروض في تبويب Monitor يتم اختياره بهذا الترتيب:
+
+1. الزوج الرئيسي المفعّل (Primary + Enabled)
+2. أول زوج مفعّل في الـ Watchlist
+3. إعدادات الزوج الافتراضية من `ForexMonitorSettings`
 
 ## تنبيهات نظام حقيقية (Local Notifications)
 
