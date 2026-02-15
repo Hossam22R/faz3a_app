@@ -98,18 +98,18 @@ class _CartScreenState extends State<CartScreen> {
                                   child: _CartItemTile(
                                     item: item,
                                     onRemove: canRemove
-                                        ? () => cartProvider.removeItem(userId: userId!, itemId: item.id)
+                                        ? () => cartProvider.removeItem(userId: userId, itemId: item.id)
                                         : null,
                                     onDecrease: canDecrease
                                         ? () => cartProvider.updateQuantity(
-                                              userId: userId!,
+                                              userId: userId,
                                               itemId: item.id,
                                               quantity: item.quantity - 1,
                                             )
                                         : null,
                                     onIncrease: canIncrease
                                         ? () => cartProvider.updateQuantity(
-                                              userId: userId!,
+                                              userId: userId,
                                               itemId: item.id,
                                               quantity: item.quantity + 1,
                                             )
