@@ -15,6 +15,14 @@ const LEVELS = [{
   sky: ['#08243f', '#136a9c', '#4fc3ef', '#e2f6ff'], sun: '#ffffff', accent: '#ffc21a', panel: '#0a2036',
   glyphs: [['١', 640, 820, 270], ['+', 1080, 690, 300], ['٢', 1520, 820, 270], ['=', 820, 1120, 200], ['٣', 1340, 1120, 220]],
   land: 'shanasheel', hero: 'MONKEY', heroAt: [1080, 1560, 0.8],
+}, {
+  ...COMMON, n: 2, pages: 96, name: 'المستوى الثاني', sub: 'أجمع وأطرح حتى ١٠٠', thumbs: [12, 18, 73],
+  chips: ['عشرات وآحاد', 'لوحة المئة', 'أكمل العشرة', 'جمع وطرح', 'حمل واستلاف', 'مسائل', 'ألعاب'],
+  blurb: 'يفهم طفلك العشرات والآحاد بالقطع، ويتنقّل في لوحة المئة، ويحفظ حقائق الجمع والطرح بالفهم، ثمّ يجمع ويطرح حتى ١٠٠ مع الحمل والاستلاف ويحلّ المسائل بالأشرطة.',
+  tiles: ['١٢ وحدة متدرّجة', 'قطع العشرات والآحاد', 'لوحة المئة وأنماطها', 'خطّ الأعداد المفتوح', 'حمل واستلاف بالفهم', 'تحدّي التفكير لكلّ وحدة', 'مسائل بالأشرطة', 'خريطة مغامرة وشهادة'],
+  sky: ['#1b0b3a', '#5b2a86', '#f0718a', '#ffd6a5'], sun: '#fff4e0', accent: '#ff7a59', panel: '#1c0f33',
+  glyphs: [['٤٥', 640, 820, 230], ['+', 1080, 690, 280], ['٢٧', 1520, 820, 230], ['=', 820, 1120, 190], ['٧٢', 1340, 1120, 200]],
+  land: 'malwiya', hero: 'PANDA', heroAt: [1080, 1540, 0.78],
 }];
-if (require.main === module) renderCovers(LEVELS, path.resolve(__dirname, '../output'), 'math');
+if (require.main === module) renderCovers(LEVELS.filter(L => !process.argv[2] || process.argv[2].split(',').includes(String(L.n))), path.resolve(__dirname, '../output'), 'math');
 module.exports = { LEVELS };

@@ -36,13 +36,13 @@ function tenFrame(n, { empty = false, marks = 0 } = {}) {
 const doubleFrame = n => `<div style="display:flex;flex-direction:column;gap:2mm;width:100%;height:100%"><div style="flex:1">${tenFrame(Math.min(n, 10))}</div><div style="flex:1">${tenFrame(Math.max(0, n - 10))}</div></div>`;
 
 // خط الأعداد (من اليسار إلى اليمين كما في الرياضيات)، مع أعداد مخفية وقفزات
-function numberLine(from, to, { hide = [], jumps = [], showAll = true, h = 70 } = {}) {
+function numberLine(from, to, { hide = [], jumps = [], showAll = true, h = 70, every = 1 } = {}) {
   const N = to - from, W = 1000, x = v => W - 40 - ((v - from) * (W - 80)) / N; // يبدأ من اليمين
   let o = `<line x1="20" y1="30" x2="${W - 20}" y2="30" stroke="#1E3A8A" stroke-width="5"/><path d="M${W - 20} 30 l-14 -8 v16Z M20 30 l14 -8 v16Z" fill="#1E3A8A"/>`;
   for (let v = from; v <= to; v++) {
-    o += `<line x1="${x(v)}" y1="18" x2="${x(v)}" y2="42" stroke="#1E3A8A" stroke-width="3.5"/>`;
+    o += `<line x1="${x(v)}" y1="${(v - from) % every === 0 ? 16 : 23}" x2="${x(v)}" y2="${(v - from) % every === 0 ? 44 : 37}" stroke="#1E3A8A" stroke-width="${N > 30 ? 2.2 : 3.5}"/>`;
     if (hide.includes(v)) o += `<rect x="${x(v) - 17}" y="48" width="34" height="34" rx="5" fill="#fff" stroke="#111" stroke-width="2.5"/>`;
-    else if (showAll) o += `<text x="${x(v)}" y="76" text-anchor="middle" font-family="Cairo" font-weight="700" font-size="${N > 12 ? 24 : 30}">${hd(v)}</text>`;
+    else if (showAll && (v - from) % every === 0) o += `<text x="${x(v)}" y="76" text-anchor="middle" font-family="Cairo" font-weight="700" font-size="${N / every > 12 ? 24 : 30}">${hd(v)}</text>`;
   }
   for (const [a, b] of jumps) {
     const mx = (x(a) + x(b)) / 2, hh = Math.min(28, 10 + Math.abs(x(b) - x(a)) / 6);
@@ -85,4 +85,49 @@ const ICONS = {
   heart: 'M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z',
 };
 const icon = (k, c = '#fff', sz = '100%') => `<svg viewBox="0 0 24 24" style="width:${sz};height:${sz};display:block" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${ICONS[k]}"/></svg>`;
-module.exports = { icon, ICONS, scatter, face, WORDS, dots, tenFrame, doubleFrame, numberLine, bond, objects, OBJS, eq, svg };
+
+// قطع العشرات والآحاد: عيدان العشرة (يسار) ومكعّبات الآحاد (يمين) كما في كتابة العدد
+function baseTen(tens, ones, { blank = false } = {}) {
+  const u = 14, gap = 8;
+  let o = '', x = 4;
+  for (let t = 0; t < tens; t++) {
+    for (let k = 0; k < 10; k++) o += `<rect x="${x}" y="${4 + k * u}" width="${u}" height="${u}" fill="${blank ? '#fff' : '#60A5FA'}" stroke="#1E3A8A" stroke-width="1.6"/>`;
+    x += u + gap;
+  }
+  if (tens && ones) x += 10;
+  const ox = x;
+  for (let k = 0; k < ones; k++) {
+    const cx = ox + (k % 2) * (u + 4), cy = 4 + 9 * u - Math.floor(k / 2) * (u + 4);
+    o += `<rect x="${cx}" y="${cy}" width="${u}" height="${u}" fill="${blank ? '#fff' : '#FDBA74'}" stroke="#9A3412" stroke-width="1.6"/>`;
+  }
+  const W = Math.max(ox + (ones ? 2 * u + 8 : 0), 30);
+  return svg(`0 0 ${W} ${10 * u + 8}`, o);
+}
+// لوحة المئة (١–١٠٠) تبدأ من اليمين
+function hundredChart({ hide = [], shade = [], from = 1, rows = 10 } = {}) {
+  const s = 40;
+  let o = '';
+  for (let i = 0; i < rows * 10; i++) {
+    const v = from + i, r = Math.floor(i / 10), c = i % 10, x = (9 - c) * s, y = r * s;
+    o += `<rect x="${x}" y="${y}" width="${s}" height="${s}" fill="${shade.includes(v) ? '#FDE68A' : '#fff'}" stroke="#475569" stroke-width="1.5"/>`;
+    if (!hide.includes(v)) o += `<text x="${x + s / 2}" y="${y + 27}" text-anchor="middle" font-family="Cairo" font-weight="700" font-size="17">${hd(v)}</text>`;
+  }
+  return svg(`-2 -2 ${10 * s + 4} ${rows * s + 4}`, o);
+}
+// خطّ أعداد مفتوح: نقطة بداية وقفزات مكتوب عليها مقدارها
+function openLine(points, jumps, { h = 90 } = {}) {
+  const lo = Math.min(...points), hi = Math.max(...points), W = 1000;
+  const x = v => W - 50 - ((v - lo) * (W - 100)) / Math.max(1, hi - lo);
+  let o = `<line x1="20" y1="70" x2="${W - 20}" y2="70" stroke="#1E3A8A" stroke-width="5"/>`;
+  for (const v of points) o += `<line x1="${x(v)}" y1="58" x2="${x(v)}" y2="82" stroke="#1E3A8A" stroke-width="4"/><text x="${x(v)}" y="112" text-anchor="middle" font-family="Cairo" font-weight="800" font-size="30">${hd(v)}</text>`;
+  for (const [a, b, lab] of jumps) {
+    const mx = (x(a) + x(b)) / 2, hh = 22 + Math.abs(x(b) - x(a)) / 7;
+    o += `<path d="M${x(a)} 56 Q${mx} ${56 - hh * 1.5} ${x(b)} 56" fill="none" stroke="#F97316" stroke-width="5"/><path d="M${x(b)} 56 l${x(b) > x(a) ? -13 : 13} -7 l${x(b) > x(a) ? 3 : -3} 13Z" fill="#F97316"/>`;
+    if (lab) o += `<text x="${mx}" y="${56 - hh * 0.8 - 6}" text-anchor="middle" font-family="Cairo" font-weight="800" font-size="28" fill="#C2410C" direction="ltr">${lab}</text>`;
+  }
+  return `<div style="height:${h}px;width:100%">${svg(`0 -10 ${W} 130`, o)}</div>`;
+}
+// جدول المنازل
+const pvChart = (t, o, blank = false) => `<table style="width:100%;font-size:22pt;font-weight:800"><tr style="height:9mm;font-size:12pt"><th style="background:#DBEAFE!important">العشرات</th><th style="background:#FFEDD5!important">الآحاد</th></tr><tr style="height:15mm"><td>${blank ? '' : hd(t)}</td><td>${blank ? '' : hd(o)}</td></tr></table>`;
+
+module.exports = { baseTen, hundredChart, openLine, pvChart, icon, ICONS, scatter, face, WORDS, dots, tenFrame, doubleFrame, numberLine, bond, objects, OBJS, eq, svg };
