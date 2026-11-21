@@ -26,6 +26,12 @@ const LEVELS = [
     accent: '#c08cff', panel: '#17123a', glyphs: [['أَقْرَأُ', 1500, 900, 200], ['قِصَّةً', 1080, 720, 230], ['جَمِيلَةً', 660, 900, 200]],
     land: 'taq', hero: 'OWL', heroAt: [1080, 1520, 0.85], night: true,
   },
+  {
+    n: 4, thumbs: [8, 12, 13], blurb: 'يتقن طفلك الكتابة الصحيحة: الهمزات بأنواعها، والتاء المربوطة والمفتوحة، والألف الليّنة، والحروف المتقاربة، ويقرأ نصوصاً أطول بطلاقة وفهم.', tiles: ['١٠ دروس إملائيّة', 'قاعدة وأمثلة مصنّفة', '١٠ نصوص للطلاقة', '١٠ سور من جزء عمّ', 'إملاء لكلّ درس', 'أختار الكتابة الصحيحة', 'مقياس السرعة', 'لوحة نجاح وشهادة'],
+    pages: 92, name: 'المستوى الرابع', sub: 'أقرأ وأكتب بلا أخطاء', sky: ['#3b0a1e', '#9c2a4a', '#ff8a5c', '#ffe0a3'], sun: '#fff3d6',
+    accent: '#ff5d73', panel: '#2a0d18', glyphs: [['ء', 1080, 700, 300], ['أ', 680, 820, 260], ['ؤ', 1480, 820, 260], ['ئـ', 820, 1130, 200], ['ة', 1340, 1130, 200]],
+    land: 'ishtar', hero: 'GIRAFFE', heroAt: [1120, 1500, 0.92],
+  },
 ];
 
 const rnd = (() => { let s = 99; return () => ((s = (s * 16807) % 2147483647) / 2147483647); })();
@@ -65,6 +71,22 @@ function landmark(kind, rim, cx = 1080, base = 1700) {
     o += `<rect x="${cx - 60}" y="${top - 90}" width="120" height="90" rx="10" fill="url(#stone)" ${st}/><path d="M${cx - 34} ${top} V${top - 60} Q${cx} ${top - 100} ${cx + 34} ${top - 60} V${top}Z" fill="#3b2412"/>`;
     return o;
   }
+  if (kind === 'ishtar') {
+    // بوّابة عشتار: برجان مسنّنان وقوس، آجرّ أزرق مزجّج وحيوانات ذهبيّة
+    let o = '';
+    const tower = (x, w, h) => {
+      let t = `<rect x="${x}" y="${base - h}" width="${w}" height="${h}" fill="url(#glaze)" ${st}/>`;
+      for (let k = 0; k < w / 40; k++) t += `<path d="M${x + k * 40 + 4} ${base - h} v-30 h28 v30" fill="url(#glaze)" ${st}/>`;
+      for (let r = 1; r < h / 46; r++) t += `<path d="M${x + 6} ${base - h + r * 46} H${x + w - 6}" stroke="#0d2350" stroke-opacity=".35" stroke-width="3"/>`;
+      return t;
+    };
+    o += tower(cx - 520, 300, 640) + tower(cx + 220, 300, 640) + tower(cx - 240, 480, 720);
+    o += `<path d="M${cx - 130} ${base} V${base - 330} Q${cx} ${base - 470} ${cx + 130} ${base - 330} V${base}Z" fill="#2a1608" stroke="#ffd54a" stroke-width="10"/>`;
+    for (const [x, y] of [[cx - 430, base - 470], [cx - 430, base - 300], [cx + 310, base - 470], [cx + 310, base - 300], [cx - 150, base - 600], [cx + 40, base - 600]])
+      o += `<g transform="translate(${x} ${y})"><path d="M0 30 Q10 0 40 4 Q70 0 86 18 L100 8 L96 30 Q80 44 50 42 L46 62 L38 62 L36 44 Q20 44 12 62 L4 62 L8 42Z" fill="#ffd54a" stroke="#7a5200" stroke-width="3"/></g>`;
+    o += `<path d="M${cx - 540} ${base - 150} H${cx + 540}" stroke="#ffd54a" stroke-width="8"/><path d="M${cx - 540} ${base - 560} H${cx - 220} M${cx + 220} ${base - 560} H${cx + 540}" stroke="#ffd54a" stroke-width="6"/>`;
+    return o;
+  }
   // طاق كسرى
   let o = `<rect x="${cx - 700}" y="${base - 420}" width="440" height="420" fill="url(#stone)" ${st}/>`;
   for (let r = 0; r < 3; r++) for (let c = 0; c < 4; c++) {
@@ -99,6 +121,7 @@ function art(L, back = false) {
   <defs>
     <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${s0}"/><stop offset=".3" stop-color="${s1}"/><stop offset=".48" stop-color="${s2}"/><stop offset=".6" stop-color="${s3}"/></linearGradient>
     <radialGradient id="sun" cx="1080" cy="1350" r="900" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="${L.sun}"/><stop offset=".25" stop-color="${L.sun}" stop-opacity=".85"/><stop offset="1" stop-color="${L.sun}" stop-opacity="0"/></radialGradient>
+    <linearGradient id="glaze" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4f8ff0"/><stop offset=".6" stop-color="#2156b8"/><stop offset="1" stop-color="#132f72"/></linearGradient>
     <linearGradient id="stone" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e9c38a"/><stop offset=".55" stop-color="#b9824b"/><stop offset="1" stop-color="#7a4f2a"/></linearGradient>
     <linearGradient id="trunk" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3a2210"/><stop offset="1" stop-color="#7a4a22"/></linearGradient>
     <linearGradient id="leaf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3fae5a"/><stop offset="1" stop-color="#0f4a2a"/></linearGradient>
@@ -167,7 +190,7 @@ function coverHTML(L, artSrc) {
 }
 
 function backHTML(L, artSrc, thumbs) {
-  const names = ['المستوى الأول', 'المستوى الثاني', 'المستوى الثالث'];
+  const names = ['المستوى الأول', 'المستوى الثاني', 'المستوى الثالث', 'المستوى الرابع'];
   return `<!doctype html><html dir="rtl"><head><meta charset="utf-8"><style>${CSS}
   .bk{width:216mm;height:303mm;position:relative;overflow:hidden;font-family:Cairo;color:#fff;background:linear-gradient(180deg,${L.panel} 0%,#05070d 100%)}
   .ab{position:absolute;left:0;right:0}
@@ -182,7 +205,7 @@ function backHTML(L, artSrc, thumbs) {
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:2.4mm">${L.tiles.map((t, k) => `<div style="background:rgba(255,255,255,.1);border:.5mm solid ${L.accent};border-radius:4mm;padding:2mm 1.5mm;text-align:center;font-weight:800;font-size:10.5pt;line-height:1.3;display:flex;align-items:center;justify-content:center;gap:1.5mm;min-height:13mm"><span style="background:${L.accent};color:#111;border-radius:50%;width:6mm;height:6mm;display:inline-flex;align-items:center;justify-content:center;font-size:9pt;flex:none">${hd(k + 1)}</span>${t}</div>`).join('')}</div></div>
   <div class="ab" style="top:157mm;height:72mm;display:flex;justify-content:center;gap:9mm">${thumbs.map((t, k) => `<img src="${t}" style="height:68mm;border:1.2mm solid #fff;border-radius:2mm;box-shadow:0 2mm 5mm rgba(0,0,0,.55);transform:rotate(${[-6, 0, 6][k]}deg) translateY(${[3, 0, 3][k]}mm)">`).join('')}</div>
   <div class="ab" style="top:236mm;text-align:center"><div style="font-weight:800;font-size:11pt;color:#ffe9a8;margin-bottom:1.5mm">مستويات السلسلة</div>
-    <div style="display:inline-flex;gap:3mm">${names.map((nm, k) => `<span style="border:.6mm solid ${k + 1 === L.n ? L.accent : '#ffffff55'};background:${k + 1 === L.n ? L.accent : 'transparent'};color:${k + 1 === L.n ? '#111' : '#ddd'};font-weight:800;font-size:11pt;padding:.6mm 5mm;border-radius:4mm">${nm}</span>`).join('')}</div></div>
+    <div style="display:inline-flex;gap:3mm">${names.map((nm, k) => `<span style="border:.6mm solid ${k + 1 === L.n ? L.accent : '#ffffff55'};background:${k + 1 === L.n ? L.accent : 'transparent'};color:${k + 1 === L.n ? '#111' : '#ddd'};font-weight:800;font-size:11pt;padding:.6mm 3.5mm;border-radius:4mm">${nm}</span>`).join('')}</div></div>
   <div class="ab" style="top:256mm;margin:0 18mm;border:.6mm solid #ffd54a;border-radius:5mm;padding:2.6mm 4mm;text-align:center;background:rgba(0,0,0,.35)">
     <div style="font-weight:900;font-size:15pt">مؤسسة وصال التعليمية</div>
     <div style="font-size:9pt;color:#e8e2d0;line-height:1.6">جميع الحقوق محفوظة · يُمنع النسخ أو التصوير أو إعادة الطبع دون إذن خطّي<br>هاتف: ${hd('07744482082')}</div></div>
