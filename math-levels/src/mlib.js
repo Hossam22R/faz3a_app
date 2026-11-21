@@ -132,13 +132,14 @@ const pvChart = (t, o, blank = false) => `<table style="width:100%;font-size:22p
 
 
 // مصفوفة: صفوف × أعمدة من نقاط (تبدأ من اليمين)، مع خطّ فاصل اختياريّ لتفكيك الضرب
-function array(r, c, { color = '#7C3AED', split = 0, splitColor = '#F97316', empty = false } = {}) {
+function array(r, c, { color = '#7C3AED', split = 0, splitColor = '#F97316', empty = false, splitCol = 0 } = {}) {
   const s = 30;
   let o = '';
   for (let y = 0; y < r; y++) for (let x = 0; x < c; x++) {
     const cx = (c - 1 - x) * s + s / 2 + 4, cy = y * s + s / 2 + 4;
-    o += empty ? `<circle cx="${cx}" cy="${cy}" r="10" fill="#fff" stroke="#94a3b8" stroke-width="2"/>` : `<circle cx="${cx}" cy="${cy}" r="11" fill="${split && y >= split ? splitColor : color}"/>`;
+    o += empty ? `<circle cx="${cx}" cy="${cy}" r="10" fill="#fff" stroke="#94a3b8" stroke-width="2"/>` : `<circle cx="${cx}" cy="${cy}" r="11" fill="${(split && y >= split) || (splitCol && x >= splitCol) ? splitColor : color}"/>`;
   }
+  if (splitCol) o += `<line x1="${(c - splitCol) * s + 4}" y1="0" x2="${(c - splitCol) * s + 4}" y2="${r * s + 8}" stroke="#111" stroke-width="3" stroke-dasharray="6 4"/>`;
   if (split) o += `<line x1="0" y1="${split * s + 4}" x2="${c * s + 8}" y2="${split * s + 4}" stroke="#111" stroke-width="3" stroke-dasharray="6 4"/>`;
   return svg(`0 0 ${c * s + 8} ${r * s + 8}`, o);
 }
@@ -177,4 +178,84 @@ function timesChart({ known = [], hideAll = false } = {}) {
   return svg(`-2 -2 ${11 * s + 4} ${11 * s + 4}`, o);
 }
 
-module.exports = { array, groups, barMul, timesChart, baseTen, hundredChart, openLine, pvChart, icon, ICONS, scatter, face, WORDS, dots, tenFrame, doubleFrame, numberLine, bond, objects, OBJS, eq, svg };
+
+// قطع المئات والعشرات والآحاد (المئة = لوح ١٠×١٠)
+function baseTen3(h, t, o) {
+  const u = 10, gap = 8;
+  let x = 4, out = '';
+  for (let k = 0; k < h; k++) {
+    for (let r = 0; r < 10; r++) for (let c = 0; c < 10; c++) out += `<rect x="${x + c * u}" y="${4 + r * u}" width="${u}" height="${u}" fill="#A78BFA" stroke="#4C1D95" stroke-width="1"/>`;
+    x += 10 * u + gap;
+  }
+  if (h) x += 6;
+  for (let k = 0; k < t; k++) { for (let r = 0; r < 10; r++) out += `<rect x="${x}" y="${4 + r * u}" width="${u}" height="${u}" fill="#60A5FA" stroke="#1E3A8A" stroke-width="1"/>`; x += u + 5; }
+  if (t) x += 6;
+  for (let k = 0; k < o; k++) out += `<rect x="${x + (k % 2) * (u + 3)}" y="${4 + 9 * u - Math.floor(k / 2) * (u + 3)}" width="${u}" height="${u}" fill="#FDBA74" stroke="#9A3412" stroke-width="1"/>`;
+  const W = x + (o ? 2 * u + 6 : 0);
+  return svg(`0 0 ${Math.max(W, 30)} ${10 * u + 8}`, out);
+}
+// جدول المنازل لـ ٤ خانات (ألوف، مئات، عشرات، آحاد) – يُقرأ العدد يساراً→يميناً
+const PVC = [['ألوف', '#DCFCE7'], ['مئات', '#EDE9FE'], ['عشرات', '#DBEAFE'], ['آحاد', '#FFEDD5']];
+function pv4(v, { cols = 4, blank = false } = {}) {
+  const ds = String(v).padStart(cols, ' ').split('').slice(-cols);
+  const hdrs = PVC.slice(4 - cols);
+  return `<table dir="ltr" style="width:100%;font-size:22pt;font-weight:800"><tr style="height:9mm;font-size:11pt">${hdrs.map(([n, c]) => `<th style="background:${c}!important">${n}</th>`).join('')}</tr><tr style="height:14mm">${ds.map((d, i) => `<td style="background:${hdrs[i][1]}">${blank || d === ' ' ? '' : hd(d)}</td>`).join('')}</tr></table>`;
+}
+// عمليّة عموديّة عامّة (حتى ٤ خانات) بخانة حمل/استلاف
+function colN(a, b, op, { carry = true, digits = null } = {}) {
+  const n = digits || Math.max(String(a).length, String(b).length) + (op === '+' || op === '×' ? 1 : 0);
+  const pad = v => String(v).padStart(n, ' ').split('');
+  const A = pad(a), B = pad(b);
+  const col = i => PVC[4 - n + i] ? PVC[4 - n + i][1] : '#fff';
+  const td = (t, i, extra = '') => `<td style="width:12mm;height:11.5mm;font-size:22pt;font-weight:800;border:none;background:${i >= 0 ? col(i) : 'transparent'};${extra}">${t}</td>`;
+  const bx = '<span style="display:inline-block;width:9.5mm;height:9.5mm;border:.5mm solid #111;border-radius:2mm;background:#fff"></span>';
+  const sm = '<span style="display:inline-block;width:6.5mm;height:6.5mm;border:.4mm dashed #94a3b8;border-radius:1.5mm"></span>';
+  return `<table dir="ltr" style="width:auto;margin:auto;border-collapse:collapse">
+    ${carry ? `<tr>${td('', -1)}${A.map((_, i) => td(i < n - 1 || op === '−' ? sm : '', -1)).join('')}</tr>` : ''}
+    <tr>${td('', -1)}${A.map((d, i) => td(d === ' ' ? '' : hd(d), i)).join('')}</tr>
+    <tr style="border-bottom:.8mm solid #111">${td(op, -1)}${B.map((d, i) => td(d === ' ' ? '' : hd(d), i)).join('')}</tr>
+    <tr>${td('', -1)}${A.map(() => td(bx, -1)).join('')}</tr></table>`;
+}
+// كسر مكتوب عموديّاً
+const frac = (n, d, pt = 20) => `<span style="display:inline-flex;flex-direction:column;align-items:center;font-weight:800;font-size:${pt}pt;line-height:1.05;vertical-align:middle;margin:0 1mm"><span>${n === '_' ? '<span style="display:inline-block;width:.9em;height:.9em;border:.4mm solid #111;border-radius:1mm"></span>' : hd(n)}</span><span style="border-top:.6mm solid #111;width:100%;text-align:center">${d === '_' ? '<span style="display:inline-block;width:.9em;height:.9em;border:.4mm solid #111;border-radius:1mm"></span>' : hd(d)}</span></span>`;
+// شريط كسور: d أجزاء، أوّل n ملوّنة (من اليمين)
+function fracBar(n, d, { color = '#F472B6', empty = false, label = false, W = 300, H = 46 } = {}) {
+  const w = W / d;
+  let o = '';
+  for (let k = 0; k < d; k++) o += `<rect x="${4 + W - (k + 1) * w}" y="4" width="${w}" height="${H}" fill="${!empty && k < n ? color : '#fff'}" stroke="#111" stroke-width="2.5"/>${label ? `<text x="${4 + W - (k + 0.5) * w}" y="${4 + H / 2 + 8}" text-anchor="middle" font-family="Cairo" font-weight="800" font-size="${d > 8 ? 13 : 18}">${hd(1)}/${hd(d)}</text>` : ''}`;
+  return svg(`0 0 ${W + 8} ${H + 8}`, o);
+}
+// دائرة كسور
+function fracCircle(n, d, { color = '#60A5FA', empty = false } = {}) {
+  let o = '';
+  const R = 46, c = 50;
+  if (d === 1) return svg('0 0 100 100', `<circle cx="50" cy="50" r="${R}" fill="${!empty && n ? color : '#fff'}" stroke="#111" stroke-width="3"/>`);
+  for (let k = 0; k < d; k++) {
+    const a1 = -Math.PI / 2 + (k / d) * Math.PI * 2, a2 = -Math.PI / 2 + ((k + 1) / d) * Math.PI * 2;
+    o += `<path d="M${c} ${c} L${c + R * Math.cos(a1)} ${c + R * Math.sin(a1)} A${R} ${R} 0 0 1 ${c + R * Math.cos(a2)} ${c + R * Math.sin(a2)}Z" fill="${!empty && k < n ? color : '#fff'}" stroke="#111" stroke-width="2.5"/>`;
+  }
+  return svg('0 0 100 100', o);
+}
+// خطّ أعداد للكسور من ٠ إلى ١ (يبدأ من اليمين)
+function fracLine(d, { hide = [], mark = null, h = 90 } = {}) {
+  const W = 1000, x = k => W - 60 - (k * (W - 120)) / d;
+  let o = `<line x1="40" y1="40" x2="${W - 40}" y2="40" stroke="#1E3A8A" stroke-width="5"/>`;
+  for (let k = 0; k <= d; k++) {
+    o += `<line x1="${x(k)}" y1="24" x2="${x(k)}" y2="56" stroke="#1E3A8A" stroke-width="4"/>`;
+    if (hide.includes(k)) o += `<rect x="${x(k) - 22}" y="66" width="44" height="54" rx="5" fill="#fff" stroke="#111" stroke-width="2.5"/>`;
+    else o += k === 0 || k === d ? `<text x="${x(k)}" y="100" text-anchor="middle" font-family="Cairo" font-weight="800" font-size="34">${hd(k / d)}</text>` : `<text x="${x(k)}" y="86" text-anchor="middle" font-family="Cairo" font-weight="800" font-size="24">${hd(k)}</text><line x1="${x(k) - 14}" y1="92" x2="${x(k) + 14}" y2="92" stroke="#111" stroke-width="2.5"/><text x="${x(k)}" y="118" text-anchor="middle" font-family="Cairo" font-weight="800" font-size="24">${hd(d)}</text>`;
+  }
+  if (mark !== null) o += `<circle cx="${x(mark)}" cy="40" r="12" fill="#F97316"/>`;
+  return `<div style="height:${h}px;width:100%">${svg(`0 0 ${W} 130`, o)}</div>`;
+}
+// نموذج المساحة للضرب: (عشرات + آحاد) × عدد
+function areaModel(a, b, { fill = true } = {}) {
+  const t = Math.floor(a / 10) * 10, o = a % 10, W = 300, wt = (W * t) / a, H = 90;
+  const T = (x, y, s, sz = 22) => `<text x="${x}" y="${y}" text-anchor="middle" font-family="Cairo" font-weight="800" font-size="${sz}">${s}</text>`;
+  return svg('0 0 360 150', `<rect x="${44 + W - wt}" y="30" width="${wt}" height="${H}" fill="#DBEAFE" stroke="#111" stroke-width="3"/><rect x="44" y="30" width="${W - wt}" height="${H}" fill="#FFEDD5" stroke="#111" stroke-width="3"/>
+    ${T(44 + W - wt / 2, 22, hd(t))}${T(44 + (W - wt) / 2, 22, hd(o))}${T(22, 82, hd(b), 26)}
+    ${fill ? T(44 + W - wt / 2, 84, `${hd(t)} × ${hd(b)}`, 18) + T(44 + (W - wt) / 2, 84, `${hd(o)} × ${hd(b)}`, 16) : ''}
+    <rect x="${44 + W - wt / 2 - 22}" y="128" width="44" height="20" rx="3" fill="#fff" stroke="#111" stroke-width="2"/><rect x="${44 + (W - wt) / 2 - 22}" y="128" width="44" height="20" rx="3" fill="#fff" stroke="#111" stroke-width="2"/>`);
+}
+
+module.exports = { baseTen3, pv4, colN, frac, fracBar, fracCircle, fracLine, areaModel, array, groups, barMul, timesChart, baseTen, hundredChart, openLine, pvChart, icon, ICONS, scatter, face, WORDS, dots, tenFrame, doubleFrame, numberLine, bond, objects, OBJS, eq, svg };
