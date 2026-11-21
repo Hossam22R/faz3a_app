@@ -18,27 +18,29 @@ const stage = (k) => ['محسوس', 'مصوّر', 'مجرّد', 'طلاقة', '�
 const tagU = (u, k) => `الوحدة ${hd(u)} · ${stage(k)}`;
 const parent = t => `<div class="parent"><b>ركن الأهل:</b><span>${t}</span></div>`;
 const timer = () => `<div class="row" style="font-size:11pt;font-weight:700">${[1, 2, 3].map(k => `<div class="cell" style="height:11mm">المحاولة ${hd(k)}: ..... صحيحة في دقيقة</div>`).join('')}</div>`;
-const grid = (cols, items, h, gap = 2.6) => `<div style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:${gap}mm">${items.map(it => `<div class="cell" style="height:${h}mm;padding:1.5mm;gap:2mm">${it}</div>`).join('')}</div>`;
+const grid = (cols, items, h, gap = 2.6) => h === 'fill'
+  ? `<div style="display:grid;grid-template-columns:repeat(${cols},minmax(0,1fr));grid-auto-rows:1fr;gap:${gap}mm;flex:1;min-height:0">${items.map(it => `<div class="cell" style="padding:1.5mm;gap:2mm;min-height:0;min-width:0;overflow:hidden">${it}</div>`).join('')}</div>`
+  : `<div style="display:grid;grid-template-columns:repeat(${cols},minmax(0,1fr));gap:${gap}mm">${items.map(it => `<div class="cell" style="height:${h}mm;padding:1.5mm;gap:2mm">${it}</div>`).join('')}</div>`;
 const rnd = (() => { let s = 17; return (a, b) => { s = (s * 16807) % 2147483647; return a + (s % (b - a + 1)); }; })();
 
 // ---------- صفحات عامة ----------
 function digitPage(d, u, k) {
   const ob = ['apple', 'star', 'ball', 'lemon', 'carrot', 'banana'][d % 6];
   return P(`${H(`العدد ${hd(d)} : ${WORDS[d]}`, tagU(u, k))}
-  <div class="row" style="height:56mm">
-    <div class="cell" style="flex:0 0 52mm;padding:4mm">${inkSVG(hd(d), { stroke: 5, pad: 0.05 }).replace('font-family="Naskh"', 'font-family="Cairo" font-weight="800"')}</div>
-    <div class="cell" style="flex-direction:column;padding:3mm;gap:2mm"><div style="width:100%;height:22mm">${tenFrame(d)}</div><div style="width:100%;height:24mm">${d ? objects(d, ob, 5) : '<span style="font-size:12pt">صحنٌ فارغ: لا شيء</span>'}</div></div>
+  <div class="row" style="height:64mm">
+    <div class="cell" style="flex:0 0 52mm;padding:4mm">${d === 0 ? svg('0 0 100 100', '<path d="M50 22 L72 50 L50 78 L28 50Z" fill="#fff" stroke="#111" stroke-width="4" stroke-linejoin="round"/>') : inkSVG(hd(d), { stroke: 5, pad: 0.05 }).replace('font-family="Naskh"', 'font-family="Cairo" font-weight="800"')}</div>
+    <div class="cell" style="flex-direction:column;padding:3mm;gap:2mm"><div style="width:100%;height:24mm">${tenFrame(d)}</div><div style="width:100%;height:26mm;overflow:hidden">${d ? objects(d, ob, d <= 5 ? 5 : 10) : '<span style="font-size:12pt">صحنٌ فارغ: لا شيء</span>'}</div></div>
   </div>
-  ${sec(1, `أكتبُ العدد ${hd(d)}`, `<div class="row">${[0, 1, 2, 3, 4, 5].map(i => `<div class="cell" style="height:20mm">${i < 3 ? big(hd(d), 40).replace('font-weight:800', 'font-weight:800;color:#bbb') : ''}</div>`).join('')}</div>`)}
-  ${sec(2, d ? `ألوّنُ ${WORDS[d]} ${d > 2 && d < 11 ? 'من الأشياء' : ''}` : 'لا ألوّنُ شيئاً: صفر', `<div style="height:26mm">${objects(10, ob, 10)}</div>`)}
-  ${sec(3, `أضعُ دائرةً حولَ ${hd(d)} على خطّ الأعداد`, numberLine(0, 10, { h: 64 }))}
+  ${sec(1, `أكتبُ العدد ${hd(d)}`, `<div class="row">${[0, 1, 2, 3, 4, 5].map(i => `<div class="cell" style="height:25mm">${i < 3 ? big(hd(d), 40).replace('font-weight:800', 'font-weight:800;color:#bbb') : ''}</div>`).join('')}</div>`)}
+  ${sec(2, d ? `ألوّنُ ${WORDS[d]} ${d > 2 && d < 11 ? 'من الأشياء' : ''}` : 'لا ألوّنُ شيئاً: صفر', `<div style="height:30mm">${objects(10, ob, 10)}</div>`)}
+  ${sec(3, `أضعُ دائرةً حولَ ${hd(d)} على خطّ الأعداد`, numberLine(0, 10, { h: 96 }), 'grow')}
   ${parent(`ابحثوا مع طفلكم عن ${WORDS[d]} أشياء في البيت، وعدّوها معاً بالإشارة إلى كلّ شيء مرّة واحدة.`)}`);
 }
 
 function fluencyPage(title, tag, items, cols = 6, h = 20) {
   return P(`${H(title, tag)}
   <div style="font-size:11.5pt">يقرأ التلميذ بأسرع ما يستطيع لمدّة دقيقة واحدة، والمعلّم يعدّ الإجابات الصحيحة.</div>
-  ${grid(cols, items, h, 2.2)}
+  ${grid(cols, items, 'fill', 2.2)}
   ${timer()}`);
 }
 
@@ -50,17 +52,17 @@ function drill(title, tag, list) {
 }
 
 function barModel(a, b, whole) {
-  const W = 300, wa = (a / whole) * W;
+  const W = 300, wa = (W * b) / whole; [a, b] = [b, a]; // الجزء الأوّل على اليمين
   const lab = v => (v === null ? '?' : hd(v));
   return svg('0 0 320 110', `<rect x="10" y="10" width="${W}" height="34" rx="4" fill="#fff" stroke="#111" stroke-width="3"/><text x="${10 + W / 2}" y="35" text-anchor="middle" font-family="Cairo" font-weight="800" font-size="24">${lab(null)}</text>
   <rect x="10" y="56" width="${wa}" height="34" rx="4" fill="#fff" stroke="#111" stroke-width="3"/><rect x="${10 + wa}" y="56" width="${W - wa}" height="34" rx="4" fill="#fff" stroke="#111" stroke-width="3"/>
   <text x="${10 + wa / 2}" y="81" text-anchor="middle" font-family="Cairo" font-weight="800" font-size="24">${hd(a)}</text><text x="${10 + wa + (W - wa) / 2}" y="81" text-anchor="middle" font-family="Cairo" font-weight="800" font-size="24">${hd(b)}</text>`);
 }
 function barSub(whole, part) {
-  const W = 300, wp = (part / whole) * W;
+  const W = 300, wq = ((whole - part) / whole) * W; // الجزء المعلوم على اليمين
   return svg('0 0 320 110', `<rect x="10" y="10" width="${W}" height="34" rx="4" fill="#fff" stroke="#111" stroke-width="3"/><text x="${10 + W / 2}" y="35" text-anchor="middle" font-family="Cairo" font-weight="800" font-size="24">${hd(whole)}</text>
-  <rect x="10" y="56" width="${wp}" height="34" rx="4" fill="#fff" stroke="#111" stroke-width="3"/><rect x="${10 + wp}" y="56" width="${W - wp}" height="34" rx="4" fill="#fff" stroke="#111" stroke-width="3"/>
-  <text x="${10 + wp / 2}" y="81" text-anchor="middle" font-family="Cairo" font-weight="800" font-size="24">${hd(part)}</text><text x="${10 + wp + (W - wp) / 2}" y="81" text-anchor="middle" font-family="Cairo" font-weight="800" font-size="24">?</text>`);
+  <rect x="10" y="56" width="${wq}" height="34" rx="4" fill="#fff" stroke="#111" stroke-width="3"/><rect x="${10 + wq}" y="56" width="${W - wq}" height="34" rx="4" fill="#fff" stroke="#111" stroke-width="3"/>
+  <text x="${10 + wq / 2}" y="81" text-anchor="middle" font-family="Cairo" font-weight="800" font-size="24">?</text><text x="${10 + wq + (W - wq) / 2}" y="81" text-anchor="middle" font-family="Cairo" font-weight="800" font-size="24">${hd(part)}</text>`);
 }
 function wordProblems(title, tag, probs, sub) {
   return P(`${H(title, tag)}
@@ -77,10 +79,10 @@ const UNITS = [
   { t: 'أرى الكمية دون عدّ', pages: u => [
     P(`${H('أرى الكمية دون عدّ (١–٥)', tagU(u, 0))}
       <div class="sec" style="font-size:12.5pt;line-height:1.85"><b>هيّا نلعب:</b> يُظهر المعلّم البطاقة ثانيتين ثمّ يُخفيها، ويقول التلميذ العدد دون أن يعدّ. ثمّ نلعب بحبوب أو أغطية قناني على الطاولة.</div>
-      ${grid(3, [1, 2, 3, 4, 5, 3, 4, 2, 5].map((v, i) => `<div style="width:34mm;height:34mm">${dots(v, i < 5 ? 'dice' : 'rand', i)}</div>`), 44)}
+      ${grid(3, [1, 2, 3, 4, 5, 3, 4, 2, 5].map((v, i) => `<div style="width:40mm;height:40mm">${dots(v, i < 5 ? 'dice' : 'rand', i)}</div>`), 'fill')}
       ${parent('ارموا حجر النرد مع طفلكم، واطلبوا منه أن يقول العدد بنظرة سريعة.')}`),
     P(`${H('أنظرُ بسرعة وأكتبُ العدد', tagU(u, 1))}
-      ${grid(4, shuffle([1, 2, 3, 4, 5, 2, 3, 4, 5, 1, 3, 4], 3).map((v, i) => `<div style="width:26mm;height:26mm">${dots(v, i % 2 ? 'rand' : 'dice', i + 5)}</div>${box()}`), 34)}`),
+      ${grid(3, shuffle([1, 2, 3, 4, 5, 2, 3, 4, 5, 1, 3, 4], 3).map((v, i) => `<div style="width:34mm;height:34mm">${dots(v, i % 2 ? 'rand' : 'dice', i + 5)}</div>${box(15, 14)}`), 'fill')}`),
     P(`${H('أصلُ النقاط بالعدد', tagU(u, 2))}
       ${sec(1, 'أصلُ بخطّ', `<div style="display:grid;grid-template-columns:34mm 1fr 30mm;row-gap:4mm">${(() => { const a = shuffle([1, 2, 3, 4, 5], 4), b = shuffle([1, 2, 3, 4, 5], 9); return a.map((v, i) => `<div style="height:30mm;width:30mm">${dots(v, 'rand', i + 2)}</div><div style="display:flex;justify-content:space-between;align-items:center;padding:0 3mm"><b>●</b><b>●</b></div><div class="cell" style="height:30mm">${big(hd(b[i]), 36)}</div>`).join(''); })()}</div>`, 'grow')}`),
     fluencyPage('أقولُ العدد بسرعة', tagU(u, 3), Array.from({ length: 30 }, (_, i) => `<div style="width:22mm;height:22mm">${dots(rnd(1, 5), i % 3 ? 'rand' : 'dice', i + 30)}</div>`), 6, 30),
@@ -98,15 +100,15 @@ const UNITS = [
       <div style="display:flex;flex-direction:column;gap:3mm;flex:1">${[6, 9, 4, 8, 7, 10, 5].map((v, i) => `<div class="cell" style="flex:1;gap:4mm;padding:0 4mm">${big(hd(v), 30)}<div style="flex:1;height:17mm">${objects(10, ['star', 'ball', 'apple'][i % 3], 10)}</div></div>`).join('')}</div>`),
     fluencyPage('أقرأُ إطار العشرة بسرعة', tagU(u, 3), Array.from({ length: 20 }, () => `<div style="width:38mm;height:17mm">${tenFrame(rnd(0, 10))}</div>`), 4, 30),
     P(`${H('أرسمُ دوائرَ بعدد الرقم', tagU(u, 4))}
-      ${grid(2, [5, 8, 3, 10, 6, 9, 4, 7].map(v => `${big(hd(v), 34)}<div style="flex:1;height:30mm;border:.4mm dashed #111;border-radius:2mm"></div>`), 38)}`),
+      ${grid(2, [5, 8, 3, 10, 6, 9, 4, 7].map(v => `${big(hd(v), 34)}<div style="flex:1;height:90%;border:.4mm dashed #111;border-radius:2mm"></div>`), 'fill')}`),
   ] },
   { t: 'الأعداد من ١ إلى ٥', pages: u => [1, 2, 3, 4, 5].map((d, k) => digitPage(d, u, k)) },
   { t: 'الأعداد من ٦ إلى ١٠', pages: u => [6, 7, 8, 9, 10].map((d, k) => digitPage(d, u, k)) },
   { t: 'الصفر وإطار العشرة', pages: u => [
     digitPage(0, u, 0),
-    P(`${H('أقرأُ إطار العشرة وأكتبُ العدد', tagU(u, 1))}${grid(3, shuffle([2, 5, 7, 10, 0, 4, 9, 6, 3, 8, 1, 5], 2).map(v => `<div style="width:40mm;height:17mm">${tenFrame(v)}</div>${box()}`), 30)}`),
-    P(`${H('أرسمُ النقاط في إطار العشرة', tagU(u, 2))}${grid(2, [3, 7, 5, 9, 2, 6, 8, 10].map(v => `${big(hd(v), 30)}<div style="width:58mm;height:25mm">${tenFrame(0)}</div>`), 34)}`),
-    P(`${H('كم ينقصُ ليمتلئَ الإطار؟', tagU(u, 3))}<div style="font-size:12pt">أرسم الدوائر الناقصة، ثمّ أكتب عددها.</div>${grid(2, [6, 3, 8, 5, 9, 4, 7, 2].map(v => `<div style="width:58mm;height:25mm">${tenFrame(v)}</div>${box()}`), 34)}`),
+    P(`${H('أقرأُ إطار العشرة وأكتبُ العدد', tagU(u, 1))}${grid(3, shuffle([2, 5, 7, 10, 0, 4, 9, 6, 3, 8, 1, 5], 2).map(v => `<div style="width:50mm;height:21mm">${tenFrame(v)}</div>${box(15, 14)}`), 'fill')}`),
+    P(`${H('أرسمُ النقاط في إطار العشرة', tagU(u, 2))}${grid(2, [3, 7, 5, 9, 2, 6, 8, 10].map(v => `${big(hd(v), 32)}<div style="width:62mm;height:27mm">${tenFrame(0)}</div>`), 'fill')}`),
+    P(`${H('كم ينقصُ ليمتلئَ الإطار؟', tagU(u, 3))}<div style="font-size:12pt">أرسم الدوائر الناقصة، ثمّ أكتب عددها.</div>${grid(2, [6, 3, 8, 5, 9, 4, 7, 2].map(v => `<div style="width:62mm;height:27mm">${tenFrame(v)}</div>${box(15, 14)}`), 'fill')}`),
     fluencyPage('أقرأُ إطار العشرة بسرعة', tagU(u, 4), Array.from({ length: 20 }, () => `<div style="width:38mm;height:17mm">${tenFrame(rnd(0, 10))}</div>`), 4, 30),
   ] },
   { t: 'خطّ الأعداد', pages: u => [
@@ -128,7 +130,7 @@ const UNITS = [
   { t: 'المقارنة', pages: u => [
     P(`${H('أيُّهما أكثر؟', tagU(u, 0))}<div style="font-size:12pt">أعدّ، ثمّ أضع دائرة حول المجموعة الأكثر.</div>
       <div style="display:flex;flex-direction:column;gap:3mm;flex:1">${[[3, 5], [7, 4], [2, 6], [8, 9], [5, 1]].map(([a, b], i) => `<div class="row" style="flex:1"><div class="cell" style="padding:2mm">${objects(a, ['apple', 'star', 'ball', 'lemon', 'banana'][i], 5)}</div><div class="cell" style="padding:2mm">${objects(b, ['apple', 'star', 'ball', 'lemon', 'banana'][i], 5)}</div></div>`).join('')}</div>`),
-    P(`${H('أقارنُ إطارات العشرة', tagU(u, 1))}<div style="font-size:12pt">أضع دائرة حول الأقلّ.</div>${grid(2, [[4, 7], [9, 6], [3, 3], [5, 8], [10, 2], [6, 7]].map(([a, b]) => `<div style="width:36mm;height:16mm">${tenFrame(a)}</div><div style="width:36mm;height:16mm">${tenFrame(b)}</div>`), 30)}`),
+    P(`${H('أقارنُ إطارات العشرة', tagU(u, 1))}<div style="font-size:12pt">أضع دائرة حول الأقلّ.</div>${grid(2, [[4, 7], [9, 6], [3, 3], [5, 8], [10, 2], [6, 7]].map(([a, b]) => `<div style="width:40mm;height:18mm">${tenFrame(a)}</div><div style="width:40mm;height:18mm">${tenFrame(b)}</div>`), 'fill')}`),
     P(`${H('أكبرُ وأصغرُ ويساوي', tagU(u, 2))}${sec(1, 'أضعُ دائرةً حولَ العدد الأكبر', grid(5, [[3, 8], [9, 4], [6, 7], [10, 5], [2, 1]].map(([a, b]) => `${big(hd(a), 28)}${big(hd(b), 28)}`), 22))}
       ${sec(2, 'أضعُ دائرةً حولَ العدد الأصغر', grid(5, [[5, 9], [8, 2], [4, 6], [7, 3], [1, 10]].map(([a, b]) => `${big(hd(a), 28)}${big(hd(b), 28)}`), 22))}
       <div class="sec" style="font-size:13pt;line-height:2"><b>تذكّر:</b> ${eq(7, '>', 3)} نقرؤها: سبعة أكبر من ثلاثة. ${eq(2, '<', 5)} نقرؤها: اثنان أصغر من خمسة. ${eq(4, '=', 4)} يساوي.<br>فمُ التمساح يأكل العدد الأكبر دائماً 🐊</div>
@@ -140,25 +142,25 @@ const UNITS = [
   { t: 'تركيب العدد وتحليله', pages: u => [
     P(`${H('أُكوّنُ العدد ٥ و٦ بطرق مختلفة', tagU(u, 0))}
       <div class="sec" style="font-size:12.5pt;line-height:1.85"><b>هيّا نلعب «هزّ واسكب»:</b> نضع ${hd(5)} أغطية في كوب ونسكبها: كم غطاءً على وجهه وكم على ظهره؟ نلوّن الدوائر ونكتب الجزأين.</div>
-      ${grid(2, [[5, 2], [5, 4], [5, 0], [6, 3], [6, 1], [6, 5]].map(([w, a]) => `<div style="flex:1;height:14mm">${svg(`0 0 ${w * 30} 30`, Array.from({ length: w }, (_, i) => `<circle cx="${15 + i * 30}" cy="15" r="12" fill="${i < a ? '#111' : '#fff'}" stroke="#111" stroke-width="2.5"/>`).join(''))}</div>${eq('_', '+', '_', '=', w)}`), 26)}`),
-    P(`${H('بيتُ العدد: أكملُ الجزء الناقص', tagU(u, 1))}${grid(4, [[6, 2, null], [6, null, 4], [7, 3, null], [7, null, 5], [7, 1, null], [6, null, 0], [7, 6, null], [6, 3, null]].map(([w, a, b]) => `<div style="width:38mm;height:32mm">${bond(w, a, b)}</div>`), 40)}`),
-    P(`${H('بيتُ العدد: ٨ و٩ و١٠', tagU(u, 2))}${grid(4, [[8, 5, null], [8, null, 2], [9, 4, null], [9, null, 7], [10, 6, null], [10, null, 3], [10, 8, null], [9, 9, null]].map(([w, a, b]) => `<div style="width:38mm;height:32mm">${bond(w, a, b)}</div>`), 40)}`),
+      ${grid(2, [[5, 2], [5, 4], [5, 0], [6, 3], [6, 1], [6, 5]].map(([w, a]) => `<div style="flex:1;height:14mm">${svg(`0 0 ${w * 30} 30`, Array.from({ length: w }, (_, i) => `<circle cx="${w * 30 - 15 - i * 30}" cy="15" r="12" fill="${i < a ? '#111' : '#fff'}" stroke="#111" stroke-width="2.5"/>`).join(''))}</div><span style="font-size:18pt">${eq('_', '+', '_', '=', w)}</span>`), 'fill')}`),
+    P(`${H('بيتُ العدد: أكملُ الجزء الناقص', tagU(u, 1))}${grid(4, [[6, 2, null], [6, null, 4], [7, 3, null], [7, null, 5], [7, 1, null], [6, null, 0], [7, 6, null], [6, 3, null]].map(([w, a, b]) => `<div style="width:42mm;height:36mm">${bond(w, a, b)}</div>`), 'fill')}`),
+    P(`${H('بيتُ العدد: ٨ و٩ و١٠', tagU(u, 2))}${grid(4, [[8, 5, null], [8, null, 2], [9, 4, null], [9, null, 7], [10, 6, null], [10, null, 3], [10, 8, null], [9, 9, null]].map(([w, a, b]) => `<div style="width:42mm;height:36mm">${bond(w, a, b)}</div>`), 'fill')}`),
     P(`${H('جدولُ بيتِ العدد', tagU(u, 3))}<div style="font-size:12pt">أكتب كلّ الطرق لتكوين العدد.</div>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:3mm;flex:1">${[7, 8, 9, 10].map(w => `<div style="border:.6mm solid #111;border-radius:3mm;display:flex;flex-direction:column"><div style="text-align:center;font-weight:900;font-size:24pt;border-bottom:.6mm solid #111;background:#eee;border-radius:3mm 3mm 0 0">${hd(w)}</div>${Array.from({ length: w + 1 }, (_, a) => `<div style="flex:1;display:flex;align-items:center;justify-content:center;border-bottom:.3mm solid #999;font-size:15pt">${eq(a, '+', '_')}</div>`).join('')}</div>`).join('')}</div>`),
     fluencyPage('أكملُ بيت العدد بسرعة', tagU(u, 4), Array.from({ length: 16 }, () => { const w = rnd(4, 10), a = rnd(0, w); return `<div style="width:28mm;height:24mm">${bond(w, a, null)}</div>`; }), 4, 30),
   ] },
   { t: 'أصدقاء العشرة', pages: u => [
     P(`${H('أصدقاءُ العشرة', tagU(u, 0))}<div class="sec" style="font-size:12.5pt;line-height:1.85">عددان «صديقان» إذا كان مجموعهما عشرة. نملأ إطار العشرة ونرى: كم عندي؟ وكم ينقص؟</div>
-      ${grid(2, [7, 4, 9, 2, 6, 3, 8, 5].map(v => `<div style="width:50mm;height:22mm">${tenFrame(v)}</div>${eq(v, '+', '_', '=', 10)}`), 31)}`),
+      ${grid(2, [7, 4, 9, 2, 6, 3, 8, 5].map(v => `<div style="width:48mm;height:21mm;flex:none">${tenFrame(v)}</div><span style="font-size:18pt">${eq(v, '+', '_', '=', 10)}</span>`), 'fill')}`),
     P(`${H('أصلُ كلَّ عدد بصديقه', tagU(u, 1))}${sec(1, 'مجموعُهما عشرة', `<div style="display:grid;grid-template-columns:30mm 1fr 30mm;row-gap:3.5mm">${(() => { const a = [1, 3, 5, 6, 8, 9], b = shuffle(a.map(v => 10 - v), 5); return a.map((v, i) => `<div class="cell" style="height:24mm">${big(hd(v), 32)}</div><div style="display:flex;justify-content:space-between;align-items:center;padding:0 3mm"><b>●</b><b>●</b></div><div class="cell" style="height:24mm">${big(hd(b[i]), 32)}</div>`).join(''); })()}</div>`, 'grow')}`),
-    P(`${H('أكملُ لأحصلَ على عشرة', tagU(u, 2))}${grid(3, [4, 7, 1, 9, 3, 6, 8, 2, 5, 0, 10, 7, 6, 3, 9].map(v => `<span style="font-size:22pt">${eq(v, '+', '_', '=', 10)}</span>`), 20)}`),
+    P(`${H('أكملُ لأحصلَ على عشرة', tagU(u, 2))}${grid(3, [4, 7, 1, 9, 3, 6, 8, 2, 5, 0, 10, 7, 6, 3, 9].map(v => `<span style="font-size:24pt">${eq(v, '+', '_', '=', 10)}</span>`), 'fill')}`),
     drill('تمرينُ دقيقة: أصدقاء العشرة', tagU(u, 3), Array.from({ length: 27 }, () => { const a = rnd(0, 10); return [a, '+', 10 - a]; })),
     P(`${H('ألوّنُ أصدقاء العشرة', tagU(u, 4))}<div style="font-size:12pt">ألوّن كلّ بطاقة مجموعها عشرة بلون واحد، وأترك الباقي.</div>
-      ${grid(4, shuffle([[3, 7], [4, 6], [5, 5], [2, 8], [1, 9], [6, 4], [3, 5], [2, 6], [7, 2], [8, 2], [9, 1], [4, 4], [6, 3], [10, 0], [5, 3], [7, 3]], 6).map(([a, b]) => `<span style="font-size:24pt">${eq(a, 'و', b)}</span>`), 30)}`),
+      ${grid(4, shuffle([[3, 7], [4, 6], [5, 5], [2, 8], [1, 9], [6, 4], [3, 5], [2, 6], [7, 2], [8, 2], [9, 1], [4, 4], [6, 3], [10, 0], [5, 3], [7, 3]], 6).map(([a, b]) => `<span style="font-size:26pt">${eq(a, 'و', b)}</span>`), 'fill')}`),
   ] },
   { t: 'الأعداد من ١١ إلى ٢٠', pages: u => [
     P(`${H('عشرةٌ وآحاد', tagU(u, 0))}<div class="sec" style="font-size:12.5pt;line-height:1.85">نجمع ${hd(10)} عيدان ونربطها حزمة واحدة، ثمّ نضع بجانبها عيداناً مفردة: حزمة و${hd(3)} = ${hd(13)}.</div>
-      ${grid(2, [13, 16, 11, 18, 15, 20].map(v => `<div style="width:42mm;height:38mm">${doubleFrame(v)}</div><span style="font-size:14pt;font-weight:700;white-space:nowrap;display:flex;align-items:center;gap:1.5mm">عشرة و ${box(10, 9)} = ${box(12, 9)}</span>`), 46)}`),
+      ${grid(2, [13, 16, 11, 18, 15, 20].map(v => `<div style="width:40mm;height:38mm;flex:none">${doubleFrame(v)}</div><span style="font-size:14pt;font-weight:700;white-space:nowrap;display:flex;align-items:center;gap:1.5mm">عشرة و ${box(10, 9)} = ${box(12, 9)}</span>`), 'fill')}`),
     P(`${H('أقرأُ وأكتبُ الأعداد ١١–٢٠', tagU(u, 1))}<table style="font-size:14pt"><thead><tr style="height:10mm;background:#eee"><th>العدد</th><th>اسمه</th><th>أكتبه فوق الرماديّ</th><th>أكتبه وحدي</th></tr></thead>
       <tbody>${Array.from({ length: 10 }, (_, i) => i + 11).map(v => `<tr style="height:21mm"><td style="font-weight:900;font-size:22pt">${hd(v)}</td><td style="font-weight:700">${WORDS[v]}</td><td style="color:#bbb;font-size:24pt;font-weight:800">${hd(v)}  ${hd(v)}</td><td></td></tr>`).join('')}</tbody></table>`),
     P(`${H('خطُّ الأعداد من ١٠ إلى ٢٠', tagU(u, 2))}<div style="display:flex;flex-direction:column;gap:4mm;flex:1;justify-content:space-between">${[[12, 15, 18], [11, 14, 19], [13, 16, 20], [10, 17, 15], [12, 14, 16, 18]].map(hide => `<div class="sec">${numberLine(10, 20, { hide, h: 78 })}</div>`).join('')}</div>`),
@@ -171,7 +173,7 @@ const UNITS = [
       <div style="display:flex;flex-direction:column;gap:2.6mm;flex:1">${[[3, 2], [4, 4], [5, 3], [2, 6], [6, 1], [5, 5]].map(([a, b], i) => `<div class="cell" style="flex:1;gap:3mm;padding:0 3mm"><div style="flex:${a};height:14mm">${objects(a, ['apple', 'star', 'ball'][i % 3], a)}</div><b style="font-size:22pt">+</b><div style="flex:${b};height:14mm">${objects(b, ['apple', 'star', 'ball'][i % 3], b)}</div><span style="font-size:20pt">${eq(a, '+', b, '=', '_')}</span></div>`).join('')}</div>`),
     P(`${H('أجمعُ على خطّ الأعداد', tagU(u, 1))}<div style="font-size:12pt">أبدأ من العدد الأوّل، وأقفز إلى الأمام بعدد الثاني.</div>
       <div style="display:flex;flex-direction:column;gap:3mm;flex:1;justify-content:space-between">${[[3, 4], [5, 2], [1, 6], [6, 3], [2, 5], [4, 4]].map(([a, b]) => `<div class="sec" style="display:flex;align-items:center;gap:3mm"><span style="font-size:20pt;flex:none">${eq(a, '+', b, '=', '_')}</span><div style="flex:1">${numberLine(0, 10, { h: 74 })}</div></div>`).join('')}</div>`),
-    P(`${H('أجمعُ بإطار العشرة', tagU(u, 2))}<div style="font-size:12pt">ألوّن العدد الأوّل بلون، والثاني بلون آخر، ثمّ أعدّ الكلّ.</div>${grid(2, [[4, 3], [6, 2], [5, 4], [3, 7], [2, 2], [7, 1], [8, 2], [1, 5]].map(([a, b]) => `<div style="width:50mm;height:22mm">${tenFrame(0)}</div><span style="font-size:18pt">${eq(a, '+', b, '=', '_')}</span>`), 30)}`),
+    P(`${H('أجمعُ بإطار العشرة', tagU(u, 2))}<div style="font-size:12pt">ألوّن العدد الأوّل بلون، والثاني بلون آخر، ثمّ أعدّ الكلّ.</div>${grid(2, [[4, 3], [6, 2], [5, 4], [3, 7], [2, 2], [7, 1], [8, 2], [1, 5]].map(([a, b]) => `<div style="width:46mm;height:20mm;flex:none">${tenFrame(0)}</div><span style="font-size:19pt">${eq(a, '+', b, '=', '_')}</span>`), 'fill')}`),
     wordProblems('مسائل الجمع', tagU(u, 3), [['عند سلمى ٣ تفّاحات، وأعطتها أمّها ٢ أخريين. كم تفّاحة عندها الآن؟', 3, 2], ['في الحديقة ٤ عصافير، وجاءت ٣ عصافير أخرى. كم عصفوراً في الحديقة؟', 4, 3], ['مع عليّ ٥ أقلام، ومع أخيه ٤ أقلام. كم قلماً معهما معاً؟', 5, 4], ['قرأ حسن قصّتين يوم السبت، و٥ قصص يوم الأحد. كم قصّة قرأ؟', 2, 5]]),
     drill('تمرينُ دقيقة: الجمع حتى ١٠', tagU(u, 4), Array.from({ length: 27 }, () => { const a = rnd(0, 9); return [a, '+', rnd(0, 10 - a)]; })),
   ] },
@@ -181,7 +183,7 @@ const UNITS = [
     P(`${H('أطرحُ على خطّ الأعداد', tagU(u, 1))}<div style="font-size:12pt">أبدأ من العدد الأوّل، وأقفز إلى الخلف بعدد الثاني.</div>
       <div style="display:flex;flex-direction:column;gap:3mm;flex:1;justify-content:space-between">${[[7, 3], [9, 4], [6, 2], [10, 5], [8, 6], [5, 3]].map(([a, b]) => `<div class="sec" style="display:flex;align-items:center;gap:3mm"><span style="font-size:20pt;flex:none">${eq(a, '−', b, '=', '_')}</span><div style="flex:1">${numberLine(0, 10, { h: 74 })}</div></div>`).join('')}</div>`),
     P(`${H('الجزء الناقص', tagU(u, 2))}<div style="font-size:12pt">أستعين ببيت العدد: الكلّ ناقص جزء = الجزء الآخر.</div>${grid(4, [[8, 3], [10, 4], [7, 5], [9, 2]].map(([w, a]) => `<div style="width:36mm;height:30mm">${bond(w, a, null)}</div>`), 36)}
-      ${grid(3, [[9, 3], [6, 4], [10, 7], [8, 8], [7, 0], [5, 2], [10, 1], [4, 3], [9, 6]].map(([a, b]) => `<span style="font-size:20pt">${eq(a, '−', b, '=', '_')}</span>`), 18)}`),
+      ${grid(3, [[9, 3], [6, 4], [10, 7], [8, 8], [7, 0], [5, 2], [10, 1], [4, 3], [9, 6]].map(([a, b]) => `<span style="font-size:22pt">${eq(a, '−', b, '=', '_')}</span>`), 'fill')}`),
     wordProblems('مسائل الطرح', tagU(u, 3), [['عند زينب ٨ بالونات، طار منها ٣. كم بالوناً بقي؟', 8, 3], ['على الشجرة ٧ طيور، طار منها ٢. كم طيراً بقي على الشجرة؟', 7, 2], ['في الصحن ١٠ تمرات، أكل أحمد ٤. كم تمرة بقيت؟', 10, 4], ['مع مريم ٩ ملصقات، أعطت صديقتها ٥. كم ملصقاً بقي معها؟', 9, 5]], true),
     drill('تمرينُ دقيقة: الطرح حتى ١٠', tagU(u, 4), Array.from({ length: 27 }, () => { const a = rnd(1, 10); return [a, '−', rnd(0, a)]; })),
   ] },
@@ -211,7 +213,7 @@ const PIX = [
   ['سمكة', ['..............', '.....111......', '...1122211..1.', '..122222221.11', '.12322222221.1', '.12222222222.1', '.12222222221.1', '..122222221.11', '...1122211..1.', '.....111......', '..............'], { 1: 'أسود', 2: 'برتقاليّ', 3: 'أبيض' }],
   ['شجرة', ['.....1111.....', '...11222211...', '..1222222221..', '.122222222221.', '.122222222221.', '..1222222221..', '...11222211...', '.....1331.....', '.....1331.....', '.....1331.....', '...11111111...'], { 1: 'أسود', 2: 'أخضر', 3: 'بنّي' }],
   ['بالون', ['....111111....', '...12222221...', '..1222222221..', '..1222222221..', '..1222222221..', '...12222221...', '....122221....', '......11......', '.......1......', '......1.......', '.......1......'], { 1: 'أسود', 2: 'أحمر' }],
-  ['نجمة', ['......11......', '.....1221.....', '.....1221.....', '111111221111..', '.12222222221..', '..122222221...', '...1222221....', '..122111221...', '.1221...1221..', '.11.......11..', '..............'], { 1: 'أسود', 2: 'أصفر' }],
+  ['سيّارة', ['..............', '....1111111...', '...123323321..', '..12222222221.', '.1222222222221', '.1222222222221', '.1111111111111', '...144...144..', '...144...144..', '....1.....1...', '..............'], { 1: 'أسود', 2: 'أحمر', 3: 'أزرق', 4: 'رماديّ' }],
 ];
 function colorByNumber([name, rows, legend], k) {
   const cells = rows.flatMap((r, y) => [...r].map((c, x) => ({ c, x, y })));
@@ -238,9 +240,9 @@ const fr = (v, w = 40, h = 17) => `<div style="width:${w}mm;height:${h}mm">${ten
 const dt = (v, st, sd) => `<div style="width:30mm;height:30mm">${dots(v, st, sd)}</div>`;
 const THINK = [
   { w: [dt(3, 'dice'), dt(3, 'line'), dt(4, 'dice'), dt(3, 'rand', 4)], e: [12, 'star'], err: [dt(5, 'dice'), 'قال سامي: هنا ٤ نقاط.'] },
-  { w: [`<div style="width:40mm;height:20mm">${objects(5, 'apple', 5)}</div>`, `<div style="width:40mm;height:20mm">${objects(5, 'star', 5)}</div>`, `<div style="width:40mm;height:20mm">${objects(4, 'apple', 5)}</div>`, `<div style="width:40mm;height:20mm">${objects(5, 'apple', 5)}</div>`], e: [9, 'apple'], err: [`<div style="width:60mm;height:22mm">${objects(7, 'star', 7)}</div>`, 'عدّ سامي النجوم فقال: ٨.'] },
+  { w: [`<div style="width:100%;height:20mm">${objects(5, 'apple', 5)}</div>`, `<div style="width:100%;height:20mm">${objects(5, 'star', 5)}</div>`, `<div style="width:100%;height:20mm">${objects(4, 'apple', 5)}</div>`, `<div style="width:100%;height:20mm">${objects(5, 'apple', 5)}</div>`], e: [9, 'apple'], err: [`<div style="width:60mm;height:22mm">${objects(7, 'star', 7)}</div>`, 'عدّ سامي النجوم فقال: ٨.'] },
   { w: [T(eq(3), 40), fr(3), dt(3, 'dice'), fr(5)], e: [14, 'ball'], err: [`<div style="width:50mm;height:20mm">${objects(4, 'apple', 4)}</div>`, 'كتب سامي تحت الصورة العدد ٣.'] },
-  { w: [T(eq(7), 40), fr(7), `<div style="width:40mm;height:22mm">${objects(7, 'lemon', 4)}</div>`, T(eq(9), 40)], e: [16, 'star'], err: [fr(8, 50, 21), 'قال سامي: في الإطار ٧ نقاط.'] },
+  { w: [T(eq(7), 40), fr(7), `<div style="width:100%;height:22mm">${objects(7, 'lemon', 4)}</div>`, T(eq(9), 40)], e: [16, 'star'], err: [fr(8, 50, 21), 'قال سامي: في الإطار ٧ نقاط.'] },
   { w: [fr(10), fr(0), fr(5), fr(10)], e: [11, 'lemon'], err: [fr(6, 50, 21), 'قال سامي: ينقص ٥ ليمتلئ الإطار.'] },
   { w: [T(eq(2, '،', 3, '،', 4), 22), T(eq(5, '،', 6, '،', 7), 22), T(eq(8, '،', 7, '،', 6), 22), T(eq(1, '،', 2, '،', 3), 22)], e: [15, 'ball'], err: [T(eq(3, '،', 4, '،', 6, '،', 7), 26), 'عدّ سامي هكذا.'] },
   { w: [T(eq(3, '<', 5), 24), T(eq(7, '>', 2), 24), T(eq(4, '=', 4), 24), T(eq(6, '<', 9), 24)], e: [18, 'star'], err: [T(eq(8, '<', 5), 30), 'كتب سامي هذه المقارنة.'] },
@@ -270,19 +272,14 @@ function numberTalks() {
 }
 
 function adventureMap(stations) {
-  const pts = [];
-  const N = stations.length;
-  for (let i = 0; i < N; i++) {
-    const row = Math.floor(i / 4), col = i % 4, c = row % 2 ? col : 3 - col;
-    pts.push([110 + c * 260, 120 + row * 250]);
-  }
-  const path = 'M' + pts.map(p => p.join(' ')).join(' L');
+  const pts = stations.map((_, i) => { const row = Math.floor(i / 3), col = i % 3, c = row % 2 ? 2 - col : col; return [830 - c * 330, 110 + row * 235]; });
+  const path = 'M' + pts.map(p => p.join(' ')).join(' L') + ` L${pts[pts.length - 1][0]} 1000`;
   return P(`${H('خريطةُ مغامرتي', 'نجاح')}
   <div style="font-size:12pt;text-align:center">كلّما أنهيتُ محطّة ألوّنُها وأرسم فيها نجمة. في نهاية الطريق تنتظرني شهادة الإتقان!</div>
-  <div style="flex:1">${svg('0 0 1000 1060', `<path d="${path}" fill="none" stroke="#111" stroke-width="10" stroke-dasharray="4 22" stroke-linecap="round"/>
-    ${pts.map(([x, y], i) => `<circle cx="${x}" cy="${y}" r="62" fill="#fff" stroke="#111" stroke-width="6"/><text x="${x}" y="${y + 14}" text-anchor="middle" font-family="Cairo" font-weight="900" font-size="42">${hd(i + 1)}</text>
-      <text x="${x}" y="${y + 100}" text-anchor="middle" font-family="Cairo" font-weight="700" font-size="25">${stations[i]}</text>`).join('')}
-    <path d="M880 1010 l20 -40 l20 40Z" fill="#fff" stroke="#111" stroke-width="5"/>`)}</div>`);
+  <div style="flex:1;min-height:0">${svg('0 0 1000 1130', `<path d="${path}" fill="none" stroke="#111" stroke-width="10" stroke-dasharray="4 22" stroke-linecap="round"/>
+    ${pts.map(([x, y], i) => `<circle cx="${x}" cy="${y}" r="62" fill="#fff" stroke="#111" stroke-width="6"/><text x="${x}" y="${y + 15}" text-anchor="middle" font-family="Cairo" font-weight="900" font-size="44">${hd(i + 1)}</text>
+      <text x="${x}" y="${y + 100}" text-anchor="middle" font-family="Cairo" font-weight="800" font-size="30">${stations[i]}</text>`).join('')}
+    <g transform="translate(${pts[pts.length - 1][0]} 1040)"><path d="M-55 -60 H55 V-20 Q55 30 0 34 Q-55 30 -55 -20Z" fill="#fff" stroke="#111" stroke-width="6"/><path d="M-55 -45 Q-95 -45 -85 -10 Q-75 10 -50 8 M55 -45 Q95 -45 85 -10 Q75 10 50 8" fill="none" stroke="#111" stroke-width="6"/><rect x="-14" y="32" width="28" height="22" fill="#fff" stroke="#111" stroke-width="5"/><rect x="-45" y="52" width="90" height="22" rx="4" fill="#fff" stroke="#111" stroke-width="5"/><text x="0" y="-12" text-anchor="middle" font-family="Cairo" font-weight="900" font-size="24">الشهادة</text></g>`)}</div>`);
 }
 
 function gameBoard() {
@@ -314,7 +311,7 @@ function titlePage() {
     <div style="font-size:66pt;font-weight:900;line-height:1.15">أحسب بثقة</div>
     <div style="font-size:22pt;font-weight:900;background:#111;color:#fff;border-radius:6mm;padding:2mm 10mm">المستوى الأول</div>
     <div style="font-size:18pt;font-weight:700;line-height:1.5">أفهم العدد<br>من ٠ إلى ٢٠</div>
-    <div class="row" style="width:150mm;height:32mm"><div style="flex:1">${tenFrame(7)}</div><div style="flex:0 0 32mm">${dots(5)}</div><div style="flex:0 0 38mm">${bond(10, 6, 4)}</div></div>
+    <div style="width:56mm;height:46mm">${pic("monkey")}</div><div class="row" style="width:150mm;height:30mm"><div style="flex:1">${tenFrame(7)}</div><div style="flex:0 0 30mm">${dots(5)}</div><div style="flex:0 0 36mm">${bond(10, 6, 4)}</div></div>
     <div style="width:150mm">${numberLine(0, 10, { h: 70 })}</div>
     <div style="margin-top:auto;width:100%;font-size:15pt;line-height:2.4;text-align:right">اسم التلميذ: ............................................................<br>الصف والشعبة: ......................... المدرسة: ..................................</div></div>`);
 }
@@ -323,14 +320,14 @@ function guidePage() {
     ['ابدأ بالتشخيص', 'الاختبار التشخيصي يحدّد من أين يبدأ التلميذ. لا تبدأ من الوحدة الأولى إن أتقنها.'],
     ['خمس صفحات لكلّ وحدة', 'محسوس (أشياء حقيقيّة) ← مصوّر (رسوم وإطار العشرة) ← مجرّد (أرقام) ← طلاقة ← تطبيق.'],
     ['تعليم صريح', 'اعرض الحلّ وأنت تفكّر بصوت مسموع، ثمّ حلّ مع التلميذ، ثمّ دعه يحلّ وحده مع تصحيح فوريّ.'],
-    ['خطّ الأعداد وإطار العشرة', 'هما الأداتان الأساسيّتان في كلّ الوحدات. أدوات القصّ في آخر الكتاب.'],
+    ['خطّ الأعداد وإطار العشرة', 'هما الأداتان الأساسيّتان في كلّ الوحدات، مع «تحدّي التفكير» و«حوار الأعداد».'],
     ['دقيقة طلاقة', 'نشاط موقوت قصير في كلّ وحدة. نقارن التلميذ بنفسه لا بزملائه.'],
     ['مراجعة تراكميّة', 'كلّ مراجعة تعيد مهارات الوحدات السابقة كلّها، لأنّ المتعثّر ينسى بسرعة.'],
   ];
   return P(`${H('كيف تستعمل هذا الكتاب؟', 'دليل المعلّم')}
   <div class="sec" style="font-size:12pt;line-height:1.75">يعالج هذا المستوى أكثر فجوة شائعة عند المتعثّرين: <b>الحسّ العدديّ</b>. التلميذ الذي يعدّ على أصابعه ليجمع ٨ + ٥ لن يتقدّم في الضرب والكسور. <b>المرجع:</b> دليل IES لمساعدة المتعثّرين في الرياضيات (٢٠٢١)، وأبحاث خطّ الأعداد والإدراك السريع للكمية، والتدرّج من المحسوس إلى المجرّد.</div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:3.5mm">${steps.map(([t, d], i) => `<div class="sec" style="padding:3mm 4.5mm"><div class="t"><i>${hd(i + 1)}</i><span>${t}</span></div><div style="font-size:11pt;line-height:1.65">${d}</div></div>`).join('')}</div>
-  ${sec(7, 'موادّ بسيطة نحتاجها', `<div style="font-size:11.5pt;line-height:1.8">أغطية قناني أو حبوب، عيدان (أعواد مثلّجات)، حجر نرد، طباشير، وأدوات القصّ في آخر الكتاب.</div>`)}
+  ${sec(7, 'موادّ بسيطة نحتاجها', `<div style="font-size:11.5pt;line-height:1.8">أغطية قناني أو حبوب، عيدان (أعواد مثلّجات)، حجر نرد، وطباشير لرسم خطّ الأعداد على الأرض.</div>`)}
   <div class="parent" style="font-size:11pt"><b>ملاحظة:</b><span>تُكتب الجمل العدديّة وخطّ الأعداد من اليمين إلى اليسار كما في كتابتنا العربيّة.</span></div>`);
 }
 function parentPages() {
@@ -365,7 +362,7 @@ function certificate() {
 async function build(out) {
   n = 0;
   const pages = [titlePage(), ...parentPages(), guidePage(), ...numberTalks(), ...diag('الاختبار التشخيصي', 'قبل البدء'), trackerPage(),
-    adventureMap(UNITS.map(u => u.t.replace('الأعداد من ', '').replace(' حتى ١٠', '')))];
+    adventureMap(['أرى دون عدّ', 'أعدّ الأشياء', '١ إلى ٥', '٦ إلى ١٠', 'الصفر والإطار', 'خطّ الأعداد', 'المقارنة', 'بيت العدد', 'أصدقاء العشرة', '١١ إلى ٢٠', 'الجمع', 'الطرح'])];
   const RV = { 2: 'الوحدات ١–٣', 5: 'الوحدات ١–٦', 8: 'الوحدات ١–٩', 11: 'الوحدات ١–١٢' };
   let pix = 0;
   UNITS.forEach((u, i) => {

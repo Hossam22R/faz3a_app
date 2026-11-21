@@ -128,6 +128,18 @@ async function renderPDF(pagesHTML, file, { browser } = {}) {
     return mx > lim + 0.5 ? i + 1 : 0;
   }).filter(Boolean));
   if (over.length) console.log('OVERFLOW pages:', over.join(','));
+  // فحص أفقي: أي عنصر يخرج عن الإطار الداخلي يميناً أو يساراً
+  const side = await p.evaluate(() => [...document.querySelectorAll('.page')].map((pg, i) => {
+    const r = pg.getBoundingClientRect(), m = 8.4 * 96 / 25.4;
+    for (const el of pg.querySelectorAll('*')) {
+      if (el.closest('.wsl') || el.closest('.wmk')) continue;
+      if (el.ownerSVGElement) continue; // ما داخل الرسوم يُقصّ بحدودها
+      const b = el.getBoundingClientRect();
+      if (b.width && (b.left < r.left + m - 0.5 || b.right > r.right - m + 0.5)) return i + 1;
+    }
+    return 0;
+  }).filter(Boolean));
+  if (side.length) console.log('SIDE-OVERFLOW pages:', side.join(','));
   await p.pdf({ path: file, width: '210mm', height: '297mm', printBackground: true, margin: { top: 0, right: 0, bottom: 0, left: 0 } });
   await p.close();
   if (own) await browser.close();
