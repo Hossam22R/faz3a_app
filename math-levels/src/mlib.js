@@ -10,13 +10,14 @@ const svg = (vb, inner, cls = 'pic') => `<svg class="${cls}" xmlns="http://www.w
 const DICE = { 1: [[1, 1]], 2: [[0, 0], [2, 2]], 3: [[0, 0], [1, 1], [2, 2]], 4: [[0, 0], [2, 0], [0, 2], [2, 2]], 5: [[0, 0], [2, 0], [1, 1], [0, 2], [2, 2]], 6: [[0, 0], [0, 1], [0, 2], [2, 0], [2, 1], [2, 2]] };
 function dots(n, style = 'dice', seed = 1, fill = '#111') {
   let pts;
-  if (style === 'dice' && DICE[n]) pts = DICE[n].map(([x, y]) => [20 + x * 30, 20 + y * 30]);
-  else if (style === 'line') pts = Array.from({ length: n }, (_, i) => [8 + (i * 84) / Math.max(1, n - 1 || 1), 50]).map(([x, y]) => [n === 1 ? 50 : x, y]);
+  // كلّ النقاط داخل المربّع بهامش ثابت: المربّع من ٢ إلى ٩٨، والنقاط بين ٢٢ و٧٨
+  if (style === 'dice' && DICE[n]) pts = DICE[n].map(([x, y]) => [78 - x * 28, 22 + y * 28]);
+  else if (style === 'line') pts = Array.from({ length: n }, (_, i) => [n === 1 ? 50 : 84 - (i * 68) / (n - 1), 50]);
   else {
-    const cells = shuffle(Array.from({ length: 16 }, (_, i) => i), seed).slice(0, n);
-    pts = cells.map(c => [14 + (c % 4) * 24, 14 + Math.floor(c / 4) * 24]);
+    const cells = shuffle(Array.from({ length: 9 }, (_, i) => i), seed).slice(0, Math.min(n, 9));
+    pts = cells.map(c => [78 - (c % 3) * 28, 22 + Math.floor(c / 3) * 28]);
   }
-  const r = style === 'line' && n > 5 ? 6 : 10;
+  const r = style === 'line' && n > 5 ? 5.5 : 9;
   return svg('0 0 100 100', `<rect x="2" y="2" width="96" height="96" rx="12" fill="#fff" stroke="#111" stroke-width="2.5"/>${pts.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${fill}"/>`).join('')}`);
 }
 
@@ -26,7 +27,7 @@ function tenFrame(n, { empty = false, marks = 0 } = {}) {
   for (let i = 1; i < 5; i++) o += `<line x1="${2 + i * 49.2}" y1="2" x2="${2 + i * 49.2}" y2="102" stroke="#111" stroke-width="3"/>`;
   o += `<line x1="2" y1="52" x2="248" y2="52" stroke="#111" stroke-width="3"/>`;
   for (let i = 0; i < 10; i++) {
-    const cx = 26.6 + (i % 5) * 49.2, cy = 27 + Math.floor(i / 5) * 50;
+    const cx = 26.6 + (4 - (i % 5)) * 49.2, cy = 27 + Math.floor(i / 5) * 50; // يُملأ من اليمين
     if (i < n && !empty) o += `<circle cx="${cx}" cy="${cy}" r="16" fill="#111"/>`;
     else if (i < n + marks && !empty) o += `<circle cx="${cx}" cy="${cy}" r="16" fill="#fff" stroke="#111" stroke-width="3" stroke-dasharray="5 4"/>`;
   }
@@ -36,7 +37,7 @@ const doubleFrame = n => `<div style="display:flex;flex-direction:column;gap:2mm
 
 // خط الأعداد (من اليسار إلى اليمين كما في الرياضيات)، مع أعداد مخفية وقفزات
 function numberLine(from, to, { hide = [], jumps = [], showAll = true, h = 70 } = {}) {
-  const N = to - from, W = 1000, x = v => 40 + ((v - from) * (W - 80)) / N;
+  const N = to - from, W = 1000, x = v => W - 40 - ((v - from) * (W - 80)) / N; // يبدأ من اليمين
   let o = `<line x1="20" y1="30" x2="${W - 20}" y2="30" stroke="#111" stroke-width="4"/><path d="M${W - 20} 30 l-14 -8 v16Z M20 30 l14 -8 v16Z" fill="#111"/>`;
   for (let v = from; v <= to; v++) {
     o += `<line x1="${x(v)}" y1="18" x2="${x(v)}" y2="42" stroke="#111" stroke-width="3.5"/>`;
@@ -45,9 +46,9 @@ function numberLine(from, to, { hide = [], jumps = [], showAll = true, h = 70 } 
   }
   for (const [a, b] of jumps) {
     const mx = (x(a) + x(b)) / 2, hh = Math.min(28, 10 + Math.abs(x(b) - x(a)) / 6);
-    o += `<path d="M${x(a)} 16 Q${mx} ${16 - hh * 1.6} ${x(b)} 16" fill="none" stroke="#111" stroke-width="3"/><path d="M${x(b)} 16 l${b > a ? -12 : 12} -6 l${b > a ? 2 : -2} 12Z" fill="#111"/>`;
+    o += `<path d="M${x(a)} 16 Q${mx} ${16 - hh * 1.6} ${x(b)} 16" fill="none" stroke="#111" stroke-width="3"/><path d="M${x(b)} 16 l${x(b) > x(a) ? -12 : 12} -6 l${x(b) > x(a) ? 2 : -2} 12Z" fill="#111"/>`;
   }
-  return `<div style="height:${h}px;width:100%" dir="ltr">${svg(`0 ${-36} ${W} 124`, o)}</div>`;
+  return `<div style="height:${h}px;width:100%">${svg(`0 ${-36} ${W} 124`, o)}</div>`;
 }
 
 // بيت العدد (الكلّ والجزآن)
@@ -62,7 +63,13 @@ function objects(n, img = 'apple', per = 5) {
   return `<div style="display:grid;grid-template-columns:repeat(${per},1fr);gap:1mm;width:100%;height:100%;align-content:center">${Array.from({ length: n }, () => `<div style="aspect-ratio:1">${pic(img)}</div>`).join('')}</div>`;
 }
 
-// معادلة: تُكتب من اليسار إلى اليمين بأرقام هندية
-const eq = (...parts) => `<span dir="ltr" style="unicode-bidi:isolate;font-weight:800;white-space:nowrap">${parts.map(p => (p === '_' ? '<span style="display:inline-block;width:12mm;height:11mm;border:.5mm solid #111;border-radius:2mm;vertical-align:middle"></span>' : typeof p === 'number' ? hd(p) : p)).join(' ')}</span>`;
+// معادلة عربيّة: تُقرأ من اليمين إلى اليسار بأرقام هندية (رموز < > تنعكس تلقائياً)
+const eq = (...parts) => `<span dir="rtl" style="unicode-bidi:isolate;font-weight:800;white-space:nowrap">${parts.map(p => (p === '_' ? '<span style="display:inline-block;width:12mm;height:11mm;border:.5mm solid #111;border-radius:2mm;vertical-align:middle"></span>' : typeof p === 'number' ? hd(p) : p)).join(' ')}</span>`;
 
-module.exports = { WORDS, dots, tenFrame, doubleFrame, numberLine, bond, objects, OBJS, eq, svg };
+function scatter(n, img = 'star', seed = 3) {
+  const cells = shuffle(Array.from({ length: 30 }, (_, i) => i), seed).slice(0, n);
+  return `<div style="position:relative;width:100%;height:100%">${cells.map(c => `<div style="position:absolute;width:13%;height:16%;right:${2 + (c % 6) * 16 + ((c * 7) % 5)}%;top:${3 + Math.floor(c / 6) * 19 + ((c * 3) % 4)}%">${pic(img)}</div>`).join('')}</div>`;
+}
+const face = mood => svg('0 0 100 100', `<circle cx="50" cy="50" r="44" fill="#fff" stroke="#111" stroke-width="5"/><circle cx="35" cy="40" r="6" fill="#111"/><circle cx="65" cy="40" r="6" fill="#111"/>` +
+  (mood === 2 ? '<path d="M28 60 Q50 82 72 60" fill="none" stroke="#111" stroke-width="5" stroke-linecap="round"/>' : mood === 1 ? '<path d="M30 66 H70" stroke="#111" stroke-width="5" stroke-linecap="round"/>' : '<path d="M28 72 Q50 52 72 72" fill="none" stroke="#111" stroke-width="5" stroke-linecap="round"/>'));
+module.exports = { scatter, face, WORDS, dots, tenFrame, doubleFrame, numberLine, bond, objects, OBJS, eq, svg };
