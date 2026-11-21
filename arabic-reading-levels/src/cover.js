@@ -71,6 +71,21 @@ function landmark(kind, rim, cx = 1080, base = 1700) {
     o += `<rect x="${cx - 60}" y="${top - 90}" width="120" height="90" rx="10" fill="url(#stone)" ${st}/><path d="M${cx - 34} ${top} V${top - 60} Q${cx} ${top - 100} ${cx + 34} ${top - 60} V${top}Z" fill="#3b2412"/>`;
     return o;
   }
+  if (kind === 'shanasheel') {
+    // بيوت الشناشيل البصريّة: شرفات خشبيّة بارزة بمشبّكات
+    let o = '';
+    [[cx - 620, 360, 560], [cx - 230, 460, 680], [cx + 260, 380, 600]].forEach(([x, w, h], i) => {
+      o += `<rect x="${x}" y="${base - h}" width="${w}" height="${h}" fill="url(#stone)" ${st}/>`;
+      o += `<rect x="${x - 12}" y="${base - h - 22}" width="${w + 24}" height="26" fill="#7a4a22" ${st}/>`;
+      const ow = w * 0.7, ox = x + (w - ow) / 2, oy = base - h + 70, oh = h * 0.42;
+      o += `<rect x="${ox - 18}" y="${oy}" width="${ow + 36}" height="${oh}" rx="6" fill="#8a5a2b" ${st}/>`;
+      for (let k = 0; k < 6; k++) o += `<rect x="${ox + k * (ow / 6) + 6}" y="${oy + 16}" width="${ow / 6 - 12}" height="${oh - 50}" fill="#2a1608" stroke="#c98b5a" stroke-width="3"/>`;
+      for (let k = 0; k < 6; k++) for (let r = 1; r < 5; r++) o += `<path d="M${ox + k * (ow / 6) + 6} ${oy + 16 + r * (oh - 50) / 5} h${ow / 6 - 12}" stroke="#c98b5a" stroke-width="2"/>`;
+      o += `<path d="M${ox - 18} ${oy + oh} l26 40 h${ow - 16} l26 -40Z" fill="#6b4220" ${st}/>`;
+      o += `<path d="M${x + w / 2 - 50} ${base} V${base - 150} Q${x + w / 2} ${base - 210} ${x + w / 2 + 50} ${base - 150} V${base}Z" fill="#5a3216" stroke="${rim}" stroke-width="5"/>`;
+    });
+    return o;
+  }
   if (kind === 'ishtar') {
     // بوّابة عشتار: برجان مسنّنان وقوس، آجرّ أزرق مزجّج وحيوانات ذهبيّة
     let o = '';
@@ -172,25 +187,25 @@ function coverHTML(L, artSrc) {
   </style></head><body><div class="cv">
   ${artSrc ? `<img src="${artSrc}">` : `<div class="art">${art(L)}</div>`}
   ${overlay(L)}
-  <div class="t" style="top:17mm"><div style="display:inline-flex;gap:1.6mm;background:rgba(0,0,0,.38);border:.5mm solid #ffd54a;border-radius:7mm;padding:1.4mm 3mm;box-shadow:0 1mm 3mm rgba(0,0,0,.35)">${['قراءة', 'قرآن كريم', 'إملاء', 'خطّ', 'تلوين', 'دمج ومقاطع', 'قراءات'].map(c => `<span style="background:#fff;color:#111;font-weight:800;font-size:9.5pt;border-radius:4mm;padding:.2mm 2.6mm">${c}</span>`).join('')}</div></div>
+  <div class="t" style="top:17mm"><div style="display:inline-flex;gap:1.6mm;background:rgba(0,0,0,.38);border:.5mm solid #ffd54a;border-radius:7mm;padding:1.4mm 3mm;box-shadow:0 1mm 3mm rgba(0,0,0,.35)">${(L.chips || ['قراءة', 'قرآن كريم', 'إملاء', 'خطّ', 'تلوين', 'دمج ومقاطع', 'قراءات']).map(c => `<span style="background:#fff;color:#111;font-weight:800;font-size:9.5pt;border-radius:4mm;padding:.2mm 2.6mm">${c}</span>`).join('')}</div></div>
   <div style="position:absolute;top:29mm;left:18mm;width:30mm;height:30mm;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff7c2,#ffd54a 55%,${L.accent});border:1mm solid #fff;box-shadow:0 1.5mm 4mm rgba(0,0,0,.45);display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(-10deg);color:#111;line-height:1.05">
     <b style="font-size:21pt;font-weight:900">${hd(L.pages)}</b><span style="font-size:9.5pt;font-weight:800">صفحة تعليميّة</span></div>
   <div style="position:absolute;top:28mm;right:16mm;width:50mm;padding:2.4mm 2mm 2.8mm;border-radius:6mm;background:#fff;border:1.1mm solid ${L.accent};box-shadow:0 1.5mm 4mm rgba(0,0,0,.45);transform:rotate(5deg);color:#111;line-height:1.3;text-align:center">
-    <div style="font-size:9pt;font-weight:800;color:#555">منهج مجرّب</div>
-    <div style="font-size:13.5pt;font-weight:900">التسلسل النورانيّ</div>
-    <div style="font-size:11pt;font-weight:900;background:${L.accent};border-radius:3mm;margin:1mm 3mm">متعدّد الحواس</div>
-    <div style="font-size:8.5pt;font-weight:800">أرى · أسمع · أنطق · أكتب · ألوّن</div></div>
-  <div class="t" style="top:195mm"><span style="border:.5mm solid #ffd54a;color:#ffe9a8;border-radius:5mm;padding:.5mm 6mm;font-weight:700;font-size:12pt">سلسلة علاج الضعف القرائي</span></div>
-  <div class="t" style="top:205.5mm;font-weight:900;font-size:74pt;line-height:1.1;text-shadow:0 1.2mm 2.5mm rgba(0,0,0,.45)">أقرأ بثقة</div>
+    ${(() => { const bd = L.badge || ['منهج مجرّب', 'التسلسل النورانيّ', 'متعدّد الحواس', 'أرى · أسمع · أنطق · أكتب · ألوّن']; return `<div style="font-size:9pt;font-weight:800;color:#555">${bd[0]}</div>
+    <div style="font-size:13.5pt;font-weight:900">${bd[1]}</div>
+    <div style="font-size:11pt;font-weight:900;background:${L.accent};border-radius:3mm;margin:1mm 3mm">${bd[2]}</div>
+    <div style="font-size:8.5pt;font-weight:800">${bd[3]}</div>`; })()}</div>
+  <div class="t" style="top:195mm"><span style="border:.5mm solid #ffd54a;color:#ffe9a8;border-radius:5mm;padding:.5mm 6mm;font-weight:700;font-size:12pt">${L.series || 'سلسلة علاج الضعف القرائي'}</span></div>
+  <div class="t" style="top:${L.titleTop || 205.5}mm;font-weight:900;font-size:${L.titlePt || 74}pt;line-height:1.1;text-shadow:0 1.2mm 2.5mm rgba(0,0,0,.45)">${L.title || 'أقرأ بثقة'}</div>
   <div class="t" style="top:248.5mm"><span style="background:${L.accent};color:#111;font-weight:900;font-size:19pt;padding:.4mm 9mm;border-radius:3mm;box-shadow:0 1mm 0 #00000055">${L.name}</span></div>
   <div class="t" style="top:261.5mm;font-weight:700;font-size:15pt;color:#ffe9a8">${L.sub}</div>
-  <div class="t" style="top:272mm;font-size:9.5pt;color:#e8e2d0">للتلاميذ المتلكّئين في القراءة · من الصفّ الثاني إلى الرابع الابتدائي</div>
+  <div class="t" style="top:272mm;font-size:9.5pt;color:#e8e2d0">${L.fine || 'للتلاميذ المتلكّئين في القراءة · من الصفّ الثاني إلى الرابع الابتدائي'}</div>
   <div class="t" style="top:278mm;font-size:9pt;color:#cfc6b0">© مؤسسة وصال التعليمية · جميع الحقوق محفوظة · هاتف: ${hd('07744482082')}</div>
   </div></body></html>`;
 }
 
 function backHTML(L, artSrc, thumbs) {
-  const names = ['المستوى الأول', 'المستوى الثاني', 'المستوى الثالث', 'المستوى الرابع'];
+  const names = L.names || ['المستوى الأول', 'المستوى الثاني', 'المستوى الثالث', 'المستوى الرابع'];
   return `<!doctype html><html dir="rtl"><head><meta charset="utf-8"><style>${CSS}
   .bk{width:216mm;height:303mm;position:relative;overflow:hidden;font-family:Cairo;color:#fff;background:linear-gradient(180deg,${L.panel} 0%,#05070d 100%)}
   .ab{position:absolute;left:0;right:0}
@@ -198,7 +213,7 @@ function backHTML(L, artSrc, thumbs) {
   <img src="${artSrc}" style="position:absolute;top:0;left:0;width:100%;height:95mm;object-fit:cover;object-position:50% 58%">
   <div class="ab" style="top:0;height:96mm;background:linear-gradient(180deg,rgba(0,0,0,.45) 0%,rgba(0,0,0,.15) 45%,${L.panel} 100%)"></div>
   <div class="ab" style="top:94mm;height:209mm;background:radial-gradient(ellipse at 50% 10%,${L.accent}33,transparent 60%)"></div>
-  <div class="ab" style="top:17mm;text-align:center"><span style="font-weight:900;font-size:40pt;text-shadow:0 1mm 3mm rgba(0,0,0,.6)">أقرأ بثقة</span><br>
+  <div class="ab" style="top:17mm;text-align:center"><span style="font-weight:900;font-size:40pt;text-shadow:0 1mm 3mm rgba(0,0,0,.6)">${L.title || 'أقرأ بثقة'}</span><br>
     <span style="background:${L.accent};color:#111;font-weight:900;font-size:14pt;padding:.3mm 7mm;border-radius:3mm">${L.name}</span></div>
   <div class="ab" style="top:76mm;margin:0 18mm;background:rgba(255,255,255,.96);color:#111;border-radius:6mm;padding:4mm 6mm;font-size:12.5pt;line-height:1.75;font-weight:600;text-align:center;border:1mm solid ${L.accent};box-shadow:0 2mm 5mm rgba(0,0,0,.4)">${L.blurb}</div>
   <div class="ab" style="top:111mm;margin:0 18mm"><div style="text-align:center;font-weight:900;font-size:15pt;color:#ffd54a;margin-bottom:2mm">ماذا في هذا الكتاب؟</div>
@@ -212,8 +227,7 @@ function backHTML(L, artSrc, thumbs) {
   </div></body></html>`;
 }
 
-(async () => {
-  const out = path.join(ROOT, 'output');
+async function renderCovers(LEVELS, out, prefix = 'level') {
   const tmp = path.join(ROOT, 'build');
   fs.mkdirSync(tmp, { recursive: true });
   const b = await chromium.launch();
@@ -222,7 +236,7 @@ function backHTML(L, artSrc, thumbs) {
     const pg = await b.newPage({ viewport: { width: 816, height: 1145 }, deviceScaleFactor: 3.7 });
     await pg.setContent(`<!doctype html><html><head><style>${CSS}body{margin:0}</style></head><body><div style="width:816px;height:1145px">${art(L)}</div></body></html>`);
     await pg.evaluate(() => document.fonts.ready);
-    const png = path.join(tmp, `cover${L.n}-art.png`);
+    const png = path.join(tmp, `${prefix}cover${L.n}-art.png`);
     await pg.screenshot({ path: png, clip: { x: 0, y: 0, width: 816, height: 1145 } });
     await pg.close();
     // ٢) تركيب النصوص وإخراج PDF
@@ -230,27 +244,29 @@ function backHTML(L, artSrc, thumbs) {
     const src = 'data:image/png;base64,' + fs.readFileSync(png).toString('base64');
     await p2.setContent(coverHTML(L, src), { waitUntil: 'load' });
     await p2.evaluate(() => document.fonts.ready);
-    await p2.pdf({ path: path.join(out, `level${L.n}-cover.pdf`), width: '216mm', height: '303mm', printBackground: true, margin: { top: 0, right: 0, bottom: 0, left: 0 }, pageRanges: '1' });
+    await p2.pdf({ path: path.join(out, `${prefix}${L.n}-cover.pdf`), width: '216mm', height: '303mm', printBackground: true, margin: { top: 0, right: 0, bottom: 0, left: 0 }, pageRanges: '1' });
     await p2.close();
     // ٣) الغلاف الخلفي
     const { execSync } = require('child_process');
     const thumbs = L.thumbs.map(pn => {
-      const base = path.join(tmp, `th${L.n}-${pn}`);
-      execSync(`pdftoppm -r 70 -png -f ${pn} -l ${pn} -singlefile ${path.join(out, `level${L.n}-interior.pdf`)} ${base}`);
+      const base = path.join(tmp, `${prefix}th${L.n}-${pn}`);
+      execSync(`pdftoppm -r 70 -png -f ${pn} -l ${pn} -singlefile ${path.join(out, `${prefix}${L.n}-interior.pdf`)} ${base}`);
       return 'data:image/png;base64,' + fs.readFileSync(base + '.png').toString('base64');
     });
     const pb = await b.newPage({ viewport: { width: 816, height: 1145 }, deviceScaleFactor: 2 });
     await pb.setContent(`<!doctype html><html><head><style>${CSS}body{margin:0}</style></head><body><div style="width:816px;height:1145px">${art(L, true)}</div></body></html>`);
-    const pngB = path.join(tmp, `cover${L.n}-art-back.png`);
+    const pngB = path.join(tmp, `${prefix}cover${L.n}-art-back.png`);
     await pb.screenshot({ path: pngB, clip: { x: 0, y: 0, width: 816, height: 1145 } });
     await pb.close();
     const srcB = 'data:image/png;base64,' + fs.readFileSync(pngB).toString('base64');
     const p3 = await b.newPage();
     await p3.setContent(backHTML(L, srcB, thumbs), { waitUntil: 'load' });
     await p3.evaluate(() => document.fonts.ready);
-    await p3.pdf({ path: path.join(out, `level${L.n}-back-cover.pdf`), width: '216mm', height: '303mm', printBackground: true, margin: { top: 0, right: 0, bottom: 0, left: 0 }, pageRanges: '1' });
+    await p3.pdf({ path: path.join(out, `${prefix}${L.n}-back-cover.pdf`), width: '216mm', height: '303mm', printBackground: true, margin: { top: 0, right: 0, bottom: 0, left: 0 }, pageRanges: '1' });
     await p3.close();
     console.log('cover', L.n);
   }
   await b.close();
-})();
+}
+module.exports = { renderCovers, art, landmark };
+if (require.main === module) renderCovers(LEVELS, path.join(ROOT, 'output'));
