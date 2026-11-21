@@ -12,18 +12,18 @@ const byName = nm => animals.find(a => a.name === nm);
 const W = 2160, Hh = 3030; // وحدة = 0.1 مم
 const LEVELS = [
   {
-    n: 1, name: 'المستوى الأول', sub: 'أتعرّف الحروف وأقرؤها بالحركات القصيرة', sky: ['#0d2f4f', '#1f6f8b', '#ff9a4d', '#ffd98a'], sun: '#fff2c2',
-    accent: '#ff8a1f', panel: '#10263a', glyphs: [['أ', 520, 640, 300], ['بَ', 1080, 470, 340], ['تُ', 1640, 640, 300], ['ثِ', 760, 1000, 200], ['نَ', 1420, 1000, 200]],
+    n: 1, pages: 120, name: 'المستوى الأول', sub: 'أتعرّف الحروف وأقرؤها بالحركات القصيرة', sky: ['#0d2f4f', '#1f6f8b', '#ff9a4d', '#ffd98a'], sun: '#fff2c2',
+    accent: '#ff8a1f', panel: '#10263a', glyphs: [['أ', 680, 820, 280], ['بَ', 1080, 700, 320], ['تُ', 1480, 820, 280], ['ثِ', 820, 1130, 190], ['نَ', 1340, 1130, 190]],
     land: 'ziggurat', hero: 'LION', heroAt: [1080, 1530, 0.95],
   },
   {
-    n: 2, name: 'المستوى الثاني', sub: 'أقرأ المدود والسكون والتنوين والشدّة', sky: ['#062f33', '#0f6f6a', '#36c19a', '#f3e9a6'], sun: '#fffbe0',
-    accent: '#2fe0a0', panel: '#0b2a26', glyphs: [['بَا', 540, 640, 260], ['بُو', 1080, 470, 300], ['بِي', 1620, 640, 260], ['دُبٌّ', 760, 1010, 180], ['شَمْسٌ', 1420, 1010, 170]],
+    n: 2, pages: 104, name: 'المستوى الثاني', sub: 'أقرأ المدود والسكون والتنوين والشدّة', sky: ['#062f33', '#0f6f6a', '#36c19a', '#f3e9a6'], sun: '#fffbe0',
+    accent: '#2fe0a0', panel: '#0b2a26', glyphs: [['بَا', 660, 820, 240], ['بُو', 1080, 700, 280], ['بِي', 1500, 820, 240], ['دُبٌّ', 640, 1120, 170], ['شَمْسٌ', 1520, 1120, 160]],
     land: 'malwiya', hero: 'ELEPHANT', heroAt: [1080, 1540, 0.82],
   },
   {
-    n: 3, name: 'المستوى الثالث', sub: 'أقرأ الجمل والنصوص بطلاقة وفهم', sky: ['#120f3d', '#3b2a8f', '#9b5de5', '#ffc2d9'], sun: '#fff0f7',
-    accent: '#c08cff', panel: '#17123a', glyphs: [['أَقْرَأُ', 1600, 650, 210], ['قِصَّةً', 1080, 450, 240], ['جَمِيلَةً', 560, 650, 210]],
+    n: 3, pages: 96, name: 'المستوى الثالث', sub: 'أقرأ الجمل والنصوص بطلاقة وفهم', sky: ['#120f3d', '#3b2a8f', '#9b5de5', '#ffc2d9'], sun: '#fff0f7',
+    accent: '#c08cff', panel: '#17123a', glyphs: [['أَقْرَأُ', 1500, 900, 200], ['قِصَّةً', 1080, 720, 230], ['جَمِيلَةً', 660, 900, 200]],
     land: 'taq', hero: 'OWL', heroAt: [1080, 1520, 0.85], night: true,
   },
 ];
@@ -150,12 +150,17 @@ function coverHTML(L, artSrc) {
   ${artSrc ? `<img src="${artSrc}">` : `<div class="art">${art(L)}</div>`}
   ${overlay(L)}
   <div class="t" style="top:15mm"><span style="background:#F1E4C3;color:#7A1212;font-weight:700;font-size:8pt;letter-spacing:1.2pt;padding:.6mm 3mm;border-radius:2mm;direction:ltr;display:inline-block;margin-right:150mm">DESIGN · HOSSAM</span></div>
+  <div class="t" style="top:22mm"><div style="display:inline-flex;gap:1.6mm;background:rgba(0,0,0,.38);border:.5mm solid #ffd54a;border-radius:7mm;padding:1.4mm 3mm;box-shadow:0 1mm 3mm rgba(0,0,0,.35)">${['قراءة', 'قرآن كريم', 'إملاء', 'خطّ', 'تلوين', 'دمج ومقاطع', 'للأهل'].map(c => `<span style="background:#fff;color:#111;font-weight:800;font-size:9.5pt;border-radius:4mm;padding:.2mm 2.6mm">${c}</span>`).join('')}</div></div>
+  <div style="position:absolute;top:33mm;left:20mm;width:27mm;height:27mm;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff7c2,#ffd54a 55%,${L.accent});border:1mm solid #fff;box-shadow:0 1.5mm 4mm rgba(0,0,0,.45);display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(-10deg);color:#111;line-height:1.05">
+    <b style="font-size:19pt;font-weight:900">${hd(L.pages)}</b><span style="font-size:9pt;font-weight:800">صفحة تعليميّة</span></div>
+  <div style="position:absolute;top:33mm;right:20mm;width:27mm;height:27mm;border-radius:50%;background:#fff;border:1mm solid ${L.accent};box-shadow:0 1.5mm 4mm rgba(0,0,0,.45);display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(9deg);color:#111;line-height:1.15;text-align:center">
+    <span style="font-size:8pt;font-weight:800">منهج مجرّب</span><b style="font-size:10.5pt;font-weight:900">التسلسل<br>النورانيّ</b><span style="font-size:7pt;font-weight:700">متعدّد الحواس</span></div>
   <div class="t" style="top:195mm"><span style="border:.5mm solid #ffd54a;color:#ffe9a8;border-radius:5mm;padding:.5mm 6mm;font-weight:700;font-size:12pt">سلسلة علاج الضعف القرائي</span></div>
   <div class="t" style="top:205.5mm;font-weight:900;font-size:74pt;line-height:1.1;text-shadow:0 1.2mm 2.5mm rgba(0,0,0,.45)">أقرأ بثقة</div>
   <div class="t" style="top:248.5mm"><span style="background:${L.accent};color:#111;font-weight:900;font-size:19pt;padding:.4mm 9mm;border-radius:3mm;box-shadow:0 1mm 0 #00000055">${L.name}</span></div>
   <div class="t" style="top:261.5mm;font-weight:700;font-size:15pt;color:#ffe9a8">${L.sub}</div>
   <div class="t" style="top:272mm;font-size:9.5pt;color:#e8e2d0">للتلاميذ المتلكّئين في القراءة · من الصفّ الثاني إلى الرابع الابتدائي · للمعلّم والأهل</div>
-  <div class="t" style="top:278mm;font-size:9pt;color:#cfc6b0">مطبعة مؤسسة وصال التعليمية · هاتف: ${hd('07744482082')}</div>
+  <div class="t" style="top:278mm;font-size:9pt;color:#cfc6b0">© مؤسسة وصال التعليمية · جميع الحقوق محفوظة · هاتف: ${hd('07744482082')}</div>
   </div></body></html>`;
 }
 

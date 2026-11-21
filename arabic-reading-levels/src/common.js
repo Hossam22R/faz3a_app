@@ -5,8 +5,11 @@ const ROOT = path.resolve(__dirname, '..');
 const fdir = p => path.join(ROOT, 'node_modules/@fontsource', p);
 const b64 = f => fs.readFileSync(f).toString('base64');
 const face = (fam, file, wt) => `@font-face{font-family:'${fam}';font-weight:${wt};src:url(data:font/woff2;base64,${b64(file)}) format('woff2')}`;
-const FONTS = [400, 600, 700, 900].map(wt => face('Cairo', fdir(`cairo/files/cairo-arabic-${wt}-normal.woff2`), wt) + face('Cairo', fdir(`cairo/files/cairo-latin-${wt}-normal.woff2`), wt)).join('') +
-  [400, 700].map(wt => face('Naskh', fdir(`noto-naskh-arabic/files/noto-naskh-arabic-arabic-${wt}-normal.woff2`), wt) + face('Naskh', fdir(`noto-naskh-arabic/files/noto-naskh-arabic-latin-${wt}-normal.woff2`), wt)).join('');
+const fontFile = f => path.join(ROOT, 'fonts', f);
+const ttf = (fam, file, wt) => `@font-face{font-family:'${fam}';font-weight:${wt};src:url(data:font/ttf;base64,${b64(fontFile(file))}) format('truetype')}`;
+// الخطوط المعتمدة من المستخدم: Cairo للعناوين والتعليمات، Amiri Quran للنص المقروء والقرآني
+const FONTS = [[400, 'Regular'], [500, 'SemiBold'], [600, 'SemiBold'], [700, 'Bold'], [800, 'ExtraBold'], [900, 'Black']].map(([wt, f]) => ttf('Cairo', `Cairo-${f}.ttf`, wt)).join('') +
+  [400, 700].map(wt => ttf('Naskh', 'AmiriQuran-Regular.ttf', wt) + ttf('Quran', 'AmiriQuran-Regular.ttf', wt)).join('');
 
 const HD = '٠١٢٣٤٥٦٧٨٩';
 const hd = n => String(n).replace(/\d/g, d => HD[d]);
@@ -41,9 +44,18 @@ const CSS = `${FONTS}
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;background:#fff;color:#111}
 body{font-family:Cairo;direction:rtl}
-.page{width:210mm;height:297mm;padding:11mm 12mm 14mm;position:relative;overflow:hidden;page-break-after:always;break-after:page;display:flex;flex-direction:column;gap:4.2mm}
+.page{width:210mm;height:297mm;padding:12.5mm 13mm 16mm;position:relative;overflow:hidden;page-break-after:always;break-after:page;display:flex;flex-direction:column;gap:3.6mm}
 .page:last-child{page-break-after:auto;break-after:auto}
-.nk{font-family:Naskh;font-weight:700}
+.nk{font-family:Naskh;font-weight:400;line-height:normal!important;display:inline-block;margin:-.62em 0 -.04em}
+.qr{font-family:Quran;font-weight:400}
+.wsl{position:absolute;inset:4.5mm;border:.45mm solid #111;border-radius:3mm;pointer-events:none}
+.wsl::after{content:'';position:absolute;inset:3.4mm;border:.25mm solid #111;border-radius:1.6mm}
+.wsl .bt,.wsl .bb{position:absolute;left:6mm;right:6mm;height:3.4mm;font-size:5.6pt;line-height:3.4mm;white-space:nowrap;overflow:hidden;text-align:center;color:#333;letter-spacing:.2pt}
+.wsl .bt{top:0}.wsl .bb{bottom:0}
+.wsl .bl,.wsl .br{position:absolute;top:6mm;bottom:6mm;width:3.4mm;font-size:5.6pt;line-height:3.4mm;writing-mode:vertical-rl;white-space:nowrap;overflow:hidden;text-align:center;color:#333}
+.wsl .bl{left:0;transform:rotate(180deg)}.wsl .br{right:0}
+.wsl i{position:absolute;width:2.4mm;height:2.4mm;background:#111;transform:rotate(45deg)}
+.wmk{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-32deg);font-weight:900;font-size:44pt;color:#000;opacity:.028;white-space:nowrap;pointer-events:none;z-index:0}
 .hl{color:#000;font-weight:700;text-decoration:underline;text-decoration-thickness:1.2mm;text-underline-offset:3.4mm;text-decoration-skip-ink:none}
 .hdr{display:flex;align-items:center;gap:4mm;border:1mm solid #111;border-radius:6mm;padding:2.6mm 5mm;background:#fff}
 .hdr .tag{background:#111;color:#fff;border-radius:4mm;padding:1mm 4mm;font-weight:700;font-size:13pt;white-space:nowrap}
@@ -57,7 +69,7 @@ body{font-family:Cairo;direction:rtl}
 .grow{flex:1;display:flex;flex-direction:column}
 .row{display:flex;gap:3mm;justify-content:space-between;align-items:stretch}
 .cell{border:.5mm solid #111;border-radius:3.5mm;display:flex;align-items:center;justify-content:center;flex:1;text-align:center}
-.foot{position:absolute;bottom:5mm;left:12mm;right:12mm;display:flex;justify-content:space-between;align-items:center;font-size:8.5pt;color:#444}
+.foot{position:absolute;bottom:10mm;left:13mm;right:13mm;display:flex;justify-content:space-between;align-items:center;font-size:8.5pt;color:#444}
 .foot .pn{border:.5mm solid #111;border-radius:50%;width:9mm;height:9mm;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11pt;color:#111}
 .parent{border:.6mm dashed #111;border-radius:5mm;padding:2.5mm 4.5mm;font-size:11pt;line-height:1.6;display:flex;gap:3mm;align-items:center}
 .parent b{white-space:nowrap}
@@ -69,8 +81,11 @@ table{border-collapse:collapse;width:100%}
 td,th{border:.45mm solid #111;text-align:center}
 `;
 
+const BAND = Array(14).fill('مؤسسة وصال التعليمية ◆ جميع الحقوق محفوظة ◆').join(' ');
+const PROTECT = `<div class="wmk">مؤسسة وصال التعليمية</div><div class="wsl"><div class="bt">${BAND}</div><div class="bb">${BAND}</div><div class="bl">${BAND}</div><div class="br">${BAND}</div>
+  <i style="top:.5mm;left:.5mm"></i><i style="top:.5mm;right:.5mm"></i><i style="bottom:.5mm;left:.5mm"></i><i style="bottom:.5mm;right:.5mm"></i></div>`;
 function page(inner, { n, series = 'سلسلة أقرأ بثقة', level, foot = true } = {}) {
-  return `<section class="page">${inner}${foot ? `<div class="foot"><span>${series}${level ? ` · المستوى ${hd(level)}` : ''}</span><span class="pn">${hd(n)}</span><span>مطبعة مؤسسة وصال التعليمية</span></div>` : ''}</section>`;
+  return `<section class="page">${PROTECT}${inner}${foot ? `<div class="foot"><span>${series}${level ? ` · المستوى ${hd(level)}` : ''}</span><span class="pn">${hd(n)}</span><span>© مؤسسة وصال التعليمية</span></div>` : ''}</section>`;
 }
 const header = (title, tag, level) =>
   `<div class="hdr">${tag ? `<span class="tag">${tag}</span>` : ''}<h1 style="font-size:${title.length > 24 ? 19 : title.length > 17 ? 22 : 26}pt">${title}</h1><span class="lv">المستوى<b>${hd(level)}</b></span></div>`;
@@ -96,9 +111,9 @@ async function renderPDF(pagesHTML, file, { browser } = {}) {
   await p.evaluate(FIT_JS);
   // فحص الفيض: أي عنصر يتجاوز الهامش السفلي (قبل التذييل)
   const over = await p.evaluate(() => [...document.querySelectorAll('.page')].map((pg, i) => {
-    const lim = pg.getBoundingClientRect().bottom - 13.5 * 96 / 25.4;
+    const lim = pg.getBoundingClientRect().bottom - 15.5 * 96 / 25.4;
     let mx = 0;
-    pg.querySelectorAll(':scope > *:not(.foot)').forEach(el => (mx = Math.max(mx, el.getBoundingClientRect().bottom)));
+    pg.querySelectorAll(':scope > *:not(.foot):not(.wsl):not(.wmk)').forEach(el => (mx = Math.max(mx, el.getBoundingClientRect().bottom)));
     return mx > lim + 0.5 ? i + 1 : 0;
   }).filter(Boolean));
   if (over.length) console.log('OVERFLOW pages:', over.join(','));

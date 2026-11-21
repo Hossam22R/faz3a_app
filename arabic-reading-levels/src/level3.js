@@ -2,6 +2,7 @@
 const path = require('path');
 const { hd, shuffle, page, header, sec, renderPDF, ROOT } = require('./common');
 const { pic } = require('./pics');
+const X = require('./extra');
 const LV = 3;
 let n = 0;
 const P = inner => page(inner, { n: ++n, level: LV });
@@ -177,7 +178,7 @@ function guidePage() {
     ['الاختبار والشهادة', 'اختبار قبلي في البداية وبعدي في النهاية بنصّين جديدين لقياس التقدّم.'],
   ];
   return P(`${header('كيف تستعمل هذا الكتاب؟', 'دليل المعلّم', LV)}
-  <div class="sec" style="font-size:12.5pt;line-height:1.75">يهدف هذا المستوى إلى أن يقرأ التلميذ جملاً ونصوصاً قصيرة قراءةً سليمة متّصلة، وأن يفهم ما يقرأ ويجيب عنه.</div>
+  <div class="sec" style="font-size:12.5pt;line-height:1.75">يهدف هذا المستوى إلى أن يقرأ التلميذ جملاً ونصوصاً قصيرة قراءةً سليمة متّصلة، وأن يفهم ما يقرأ ويجيب عنه. <b>المرجع المنهجي:</b> يتبع الكتاب تسلسل «القاعدة النورانيّة» المجرّب في تعليم القراءة (الحرف ← الحركة ← التنوين ← المدّ ← السكون ← الشدّة)، مع التعلّم متعدّد الحواس: أرى، أسمع، أنطق، أكتب، ألوّن. ويضمّ: قرآناً كريماً، وإملاءً، وخطّاً، وتلويناً، ودمجاً للحروف، وقراءات، ولوحة نجاح، وصفحات للأهل.</div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:4mm">${steps.map(([t, d], i) => `<div class="sec" style="padding:3.5mm 4.5mm"><div class="t"><i>${hd(i + 1)}</i><span>${t}</span></div><div style="font-size:11.5pt;line-height:1.7">${d}</div></div>`).join('')}</div>
   ${sec(7, 'مؤشّر الطلاقة', `<div style="font-size:12pt;line-height:1.9">● احسب: عدد كلمات النصّ − الأخطاء = الكلمات الصحيحة.<br>● قارن زمن القراءة الأولى بالثالثة؛ الهدف أن يقلّ الزمن وتقلّ الأخطاء.<br>● انتقل إلى النصّ التالي عندما تكون الأخطاء قليلة والإجابات صحيحة.</div>`)}
   <div class="parent"><b>للأهل:</b><span>اقرؤوا مع الطفل كلّ يوم عشر دقائق، واسألوه عمّا قرأ. المدح على الجهد أهمّ من المدح على السرعة.</span></div>`);
@@ -202,13 +203,31 @@ function certificatePage() {
     <div class="row" style="width:120mm;height:30mm;margin-top:4mm">${['turtle', 'camel', 'bee'].map(i => `<div style="flex:1">${pic(i)}</div>`).join('')}</div></div>`);
 }
 
+const QS = [[96, 'أكتبُ الكلمةَ التي بدأت بها السورة', 1, 5], [93, 'أكتبُ كلمةً فيها تنوين'], [94, 'أكتبُ كلمةً فيها شدّة'], [95, 'أكتبُ اسمَ فاكهةٍ ذُكرت في السورة'],
+  [97, 'أكتبُ كلمةً فيها مدّ'], [99, 'كم آيةً في السورة؟ أكتبُ العدد'], [100, 'أكتبُ كلمةً فيها لامٌ شمسيّة'], [101, 'أكتبُ كلمةً تكرّرت في السورة'],
+  [102, 'أكتبُ كلمةً فيها حرفٌ ساكن'], [104, 'أكتبُ كلمةً فيها تاءٌ مربوطة']];
+const COLOR = [['أَقْرَأُ', 'book', 'كِتَابٌ'], ['نَخْلَةٌ', 'palm', 'النَّخْلَةُ'], ['شُكْرًا', 'cat', 'قِطَّةٌ'], ['أَمِينٌ', 'owl', 'بُومَةٌ']];
+
 async function build(out) {
   n = 0;
-  const pages = [titlePage(), guidePage(), testPage('الاختبار القبلي', 'قبل البدء', PRE), trackerPage(), ...sentencePages()];
-  T.forEach((t, i) => pages.push(textA(t, i + 1), textB(t, i + 1)));
-  pages.push(dictPage());
-  while ((pages.length + 2) % 4) pages.push(dictPage());
-  pages.push(testPage('الاختبار البعدي', 'نهاية المستوى', POST), certificatePage());
+  const pages = [titlePage(), ...X.parentPages(P, LV, 'قراءة الجمل والنصوص بطلاقة وفهم، مع سور قصيرة من القرآن الكريم', ['أقرأ نصّاً', 'أسأل عن النصّ', 'إملاء بيتي', 'سورة قصيرة']),
+    guidePage(), testPage('الاختبار القبلي', 'قبل البدء', PRE), trackerPage(), X.successChart(P, LV, [...T.map(t => t.title), 'الجملة', 'القرآن', 'الإملاء', 'الخطّ'], 4), ...sentencePages()];
+  pages.push(X.tracingPage(P, LV, 'خطّ', 'جملٌ جميلة', S2.slice(0, 6), { pt: 22 }));
+  let q = 0;
+  T.forEach((t, i) => {
+    pages.push(textA(t, i + 1), textB(t, i + 1));
+    if (i % 2) {
+      const a = T[i - 1], b = t;
+      pages.push(X.dictationPage(P, LV, `النصّان ${hd(i)}–${hd(i + 1)}`, `${a.title} و${b.title}`, [a.text[0], a.text[2], b.text[0], b.text[2]], { boxes: 0, lines: 7 }));
+      pages.push(X.quranSurahPage(P, LV, 'القرآن', QS[q][0], QS[q][1], QS[q][2], QS[q][3])); q++;
+    }
+    if ((i + 1) % 4 === 0) pages.push(X.tracingPage(P, LV, 'خطّ', 'أنسخُ بخطٍّ جميل', T.slice(i - 3, i + 1).flatMap(x => x.text.slice(0, 2)).filter(s => s.length < 34).slice(0, 6), { pt: 22 }));
+    if ((i + 1) % 5 === 0) { const c = COLOR[(i + 1) / 5 - 1]; pages.push(X.coloringPage(P, LV, 'تلوين', c[0], c[0], c[1], c[2])); }
+  });
+  pages.push(dictPage(), dictPage());
+  pages.push(testPage('الاختبار البعدي', 'نهاية المستوى', POST), ...X.appendixPages(P, LV));
+  while ((pages.length + 1) % 4) pages.push(dictPage());
+  pages.push(certificatePage());
   await renderPDF(pages, out);
   return pages.length;
 }

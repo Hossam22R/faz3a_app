@@ -2,6 +2,7 @@
 const path = require('path');
 const { hd, H, hl, shuffle, page, header, sec, renderPDF, ROOT } = require('./common');
 const { pic } = require('./pics');
+const X = require('./extra');
 const LV = 1;
 
 // [الحرف، اسمه، الكلمة المفتاحية، الصورة، [أول، وسط، آخر]، يتصل بما بعده؟]
@@ -77,7 +78,7 @@ function guidePage() {
   ];
   return P(`${header('كيف تستعمل هذا الكتاب؟', 'دليل المعلّم', LV)}
   <div class="sec" style="font-size:12.5pt;line-height:1.75">
-    <p style="margin:0 0 2mm">هذا الكتاب مخصّص للتلاميذ الذين يتعثّرون في قراءة الحروف وحركاتها. يتدرّج من الحرف المنفرد إلى المقطع ثم الكلمة، ويُستعمل في حصّة الدعم أو في البيت.</p>
+    <p style="margin:0 0 2mm">هذا الكتاب مخصّص للتلاميذ الذين يتعثّرون في قراءة الحروف وحركاتها. يتدرّج من الحرف المنفرد إلى المقطع ثم الكلمة، ويُستعمل في حصّة الدعم أو في البيت. <b>المرجع المنهجي:</b> يتبع الكتاب تسلسل «القاعدة النورانيّة» المجرّب في تعليم القراءة (الحرف ← الحركة ← التنوين ← المدّ ← السكون ← الشدّة)، مع التعلّم متعدّد الحواس: أرى، أسمع، أنطق، أكتب، ألوّن. ويضمّ: قرآناً كريماً، وإملاءً، وخطّاً، وتلويناً، ودمجاً للحروف، وقراءات، ولوحة نجاح، وصفحات للأهل.</p>
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:4mm">${steps.map(([t, d], i) => `
     <div class="sec" style="padding:3.5mm 4.5mm"><div class="t"><i>${hd(i + 1)}</i><span>${t}</span></div><div style="font-size:11.5pt;line-height:1.7">${d}</div></div>`).join('')}
@@ -103,11 +104,11 @@ function testPage(title, tag, seed) {
 }
 
 function trackerPage() {
-  const rows = L.map(l => `<tr><td class="nk" style="font-size:17pt;line-height:1">${l.ch}</td><td></td><td></td><td></td><td></td><td></td></tr>`).join('');
+  const rows = L.map(l => `<tr><td style="font-size:15pt;font-weight:800;line-height:1">${l.ch}</td><td></td><td></td><td></td><td></td><td></td></tr>`).join('');
   return P(`${header('جدول متابعة التقدّم', 'للمعلّم', LV)}
   <table style="font-size:10.5pt"><thead><tr style="height:10mm;background:#eee">
     <th style="width:14mm">الحرف</th><th>يميّز شكله</th><th>يقرؤه بالحركات</th><th>يكتبه</th><th>يقرأ كلماته</th><th style="width:44mm">ملاحظة</th></tr></thead>
-    <tbody>${rows}</tbody></table>`).replace(/<tr><td/g, '<tr style="height:8.1mm"><td');
+    <tbody>${rows}</tbody></table>`).replace(/<tr><td/g, '<tr style="height:7.7mm"><td');
 }
 
 function lessonA(l, idx, learned) {
@@ -117,13 +118,13 @@ function lessonA(l, idx, learned) {
   ensure.forEach((s, i) => (row[i * 3] = s));
   const fm = forms(l);
   return P(`${header(`حرف ${l.name}`, `الدرس ${hd(idx)}`, LV)}
-  <div class="row" style="height:68mm">
+  <div class="row" style="height:62mm">
     <div class="cell" style="flex:0 0 66mm;flex-direction:column;border-width:.9mm">${S(l.ch, 'hero')}</div>
     <div class="cell" style="flex-direction:column;padding:3mm;gap:1mm"><div style="height:46mm;width:100%">${pic(l.img)}</div>
       <div class="nk" style="font-size:30pt;line-height:1.4">${hl(l.key, hlSet(l.ch))}</div></div>
   </div>
-  ${sec(1, 'أنظرُ وأسمعُ وأقرأُ', `<div class="row">${HS.map(h => `<div class="cell" style="flex-direction:column;height:40mm">${S(syl(l.ch, h), 'big')}<span style="font-size:12pt;font-weight:700">${HN[h]}</span></div>`).join('')}</div>`)}
-  ${sec(2, 'أشكالُ الحرفِ في الكلمة', `<div class="row">${fm.map(([t, f]) => `<div class="cell" style="flex-direction:column;height:30mm">${S(f, 'mid')}<span style="font-size:10pt">${t}</span></div>`).join('')}</div>`)}
+  ${sec(1, 'أنظرُ وأسمعُ وأقرأُ', `<div class="row">${HS.map(h => `<div class="cell" style="flex-direction:column;height:35mm">${S(syl(l.ch, h), 'big')}<span style="font-size:12pt;font-weight:700">${HN[h]}</span></div>`).join('')}</div>`)}
+  ${sec(2, 'أشكالُ الحرفِ في الكلمة', `<div class="row">${fm.map(([t, f]) => `<div class="cell" style="flex-direction:column;height:27mm">${S(f, 'mid')}<span style="font-size:10pt">${t}</span></div>`).join('')}</div>`)}
   ${sec(3, 'أقرأُ المقاطعَ', `<div class="row">${row.map(s => `<div class="cell" style="height:21mm">${S(s, 'sm')}</div>`).join('')}</div>`, '', idx > 1 ? 'مع حروف تعلّمتُها سابقاً' : '')}
   <div class="parent"><b>ركن الأهل:</b><span>انطقوا مع طفلكم «${syl(l.ch, 'fatha')} – ${syl(l.ch, 'damma')} – ${syl(l.ch, 'kasra')}»، واطلبوا منه كلمتين فيهما صوت ${l.name}، ثم يلوّن الصورة.</span></div>`);
 }
@@ -132,9 +133,9 @@ function lessonB(l, idx) {
   const fam = famOf(l.ch);
   const others = (fam.length > 1 ? fam.filter(c => c !== l.ch) : ['ل', 'ك', 'ت']).concat(['م', 'ر', 'س']).slice(0, 4);
   const items = shuffle([...HS.map(h => syl(l.ch, h)), syl(l.ch, HS[idx % 3]), ...others.flatMap((c, i) => [syl(c, HS[i % 3]), syl(c, HS[(i + 1) % 3])])], idx * 7).slice(0, 12);
-  const trace = h => `<div class="row" style="gap:2.4mm">${[0, 1, 2].map(() => `<div class="cell" style="height:20mm">${S(syl(l.ch, h), 'trace sm2')}</div>`).join('')}${[0, 1, 2].map(() => '<div class="cell" style="height:20mm"></div>').join('')}</div>`;
+  const trace = h => `<div class="row" style="gap:2.4mm">${[0, 1, 2].map(() => `<div class="cell" style="height:18mm">${S(syl(l.ch, h), 'trace sm2')}</div>`).join('')}${[0, 1, 2].map(() => '<div class="cell" style="height:18mm"></div>').join('')}</div>`;
   return P(`${header(`أتدرّبُ على حرف ${l.name}`, `الدرس ${hd(idx)}`, LV)}
-  ${sec(1, 'أقرأُ الكلماتِ وأضعُ خطّاً تحتَ الحرف', `<div class="row">${l.words.map((wd, i) => `<div class="cell" style="flex-direction:column;height:30mm"><span class="nk" style="font-size:30pt;line-height:1.5">${wd}</span><span style="font-size:9.5pt">${['في الأوّل', 'في الوسط', 'في الآخر'][i]}</span></div>`).join('')}</div>`)}
+  ${sec(1, 'أقرأُ الكلماتِ وأضعُ خطّاً تحتَ الحرف', `<div class="row">${l.words.map((wd, i) => `<div class="cell" style="flex-direction:column;height:27mm"><span class="nk" style="font-size:30pt">${wd}</span><span style="font-size:9.5pt">${['في الأوّل', 'في الوسط', 'في الآخر'][i]}</span></div>`).join('')}</div>`)}
   ${sec(2, `أضعُ دائرةً حولَ المقطعِ الذي فيه حرفُ ${l.name}`, `<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:2.6mm">${items.map(s => `<div class="cell" style="height:21mm">${S(s, 'sm')}</div>`).join('')}</div>`)}
   ${sec(3, 'أكتبُ فوقَ الحرفِ الرماديّ ثمّ أكتبُ وحدي', `<div style="display:flex;flex-direction:column;gap:2.4mm">${HS.map(trace).join('')}</div>`)}
   <div class="sec grow">${`<div class="t"><i>${hd(4)}</i><span>أرسمُ شيئاً فيه حرفُ ${l.name}</span></div>`}</div>`);
@@ -148,10 +149,10 @@ function reviewPage(fam, k) {
   const showMatch = fam.slice(0, 4);
   const ml = shuffle(showMatch, k + 2), mi = shuffle(showMatch, k + 9);
   return P(`${header(`مراجعة: ${fam.join(' ')}`, `مراجعة ${hd(k)}`, LV)}
-  ${sec(1, 'أقرأُ المقاطعَ بسرعة', `<div style="display:grid;grid-template-columns:repeat(8,1fr);gap:2mm">${sylls.slice(0, 24).map(s => `<div class="cell" style="height:15mm">${S(s, 'sm')}</div>`).join('')}</div>`, '', 'المعلّم يحسب الأخطاء')}
+  ${sec(1, 'أقرأُ المقاطعَ بسرعة', `<div style="display:grid;grid-template-columns:repeat(8,1fr);gap:2mm">${sylls.slice(0, 24).map(s => `<div class="cell" style="height:13.5mm">${S(s, 'sm')}</div>`).join('')}</div>`, '', 'المعلّم يحسب الأخطاء')}
   ${sec(2, 'أصلُ الحرفَ بصورتِه', `<div style="display:grid;grid-template-columns:28mm 1fr 34mm;row-gap:2.4mm">${ml.map((c, i) => `
-     <div class="cell" style="height:18mm">${S(c, 'sm')}</div><div style="display:flex;justify-content:space-between;align-items:center;padding:0 3mm"><b style="font-size:14pt">●</b><b style="font-size:14pt">●</b></div><div class="cell" style="height:18mm;padding:1mm">${pic(byCh(mi[i]).img)}</div>`).join('')}</div>`)}
-  ${sec(3, 'أقرأُ الكلمات', `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:2.4mm">${words.map(wd => `<div class="cell" style="height:15mm"><span class="nk" style="font-size:21pt;line-height:1.5">${wd}</span></div>`).join('')}</div>`)}
+     <div class="cell" style="height:16.5mm">${S(c, 'sm')}</div><div style="display:flex;justify-content:space-between;align-items:center;padding:0 3mm"><b style="font-size:14pt">●</b><b style="font-size:14pt">●</b></div><div class="cell" style="height:16.5mm;padding:1mm">${pic(byCh(mi[i]).img)}</div>`).join('')}</div>`)}
+  ${sec(3, 'أقرأُ الكلمات', `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:2.4mm">${words.map(wd => `<div class="cell" style="height:13.5mm"><span class="nk" style="font-size:21pt;line-height:1.5">${wd}</span></div>`).join('')}</div>`)}
   <div class="sec" style="display:flex;justify-content:space-around;font-size:13pt;font-weight:700;padding:2.5mm">
     <span>أخطاء المقاطع: ......</span><span>أتقنتُ؟ نعم ☐ لا ☐</span><span>توقيع المعلّم: ............</span></div>`);
 }
@@ -167,21 +168,41 @@ function certificatePage() {
   </div>`);
 }
 
+function lessonC(l, idx) {
+  const fm = forms(l).map(f => f[1]).join('   ');
+  const rows = [Array(5).fill(l.ch).join('   '), HS.map(h => syl(l.ch, h)).join('   '), fm, l.key];
+  const big = `<svg viewBox="0 0 1000 560" width="100%" height="100%"><text x="500" y="400" text-anchor="middle" font-family="Naskh" font-size="420" fill="#fff" stroke="#111" stroke-width="10" stroke-linejoin="round" paint-order="stroke">${l.ch}</text>
+    ${[[90, 90], [910, 100], [100, 480], [900, 470]].map(([x, y]) => `<path d="M${x} ${y - 34} L${x + 10} ${y - 10} L${x + 34} ${y} L${x + 10} ${y + 10} L${x} ${y + 34} L${x - 10} ${y + 10} L${x - 34} ${y} L${x - 10} ${y - 10}Z" fill="#fff" stroke="#111" stroke-width="5" stroke-linejoin="round"/>`).join('')}</svg>`;
+  return P(`${header(`أخطُّ وألوّنُ حرف ${l.name}`, `الدرس ${hd(idx)}`, LV)}
+  ${sec(1, 'أكتبُ فوقَ الرماديّ ثمّ أكتبُ وحدي', `<div style="display:flex;flex-direction:column;gap:2.2mm">${rows.map(r => `<div class="cell" style="height:21mm;justify-content:space-between;padding:0 4mm">${S(r, 'sm trace')}<span style="width:40%;border-bottom:.5mm solid #111;height:12mm"></span></div>`).join('')}</div>`)}
+  <div class="sec grow" style="display:flex;flex-direction:column"><div class="t"><i>${hd(2)}</i><span>ألوّنُ الحرفَ وأزيّنُه بألواني</span></div><div style="flex:1">${big}</div></div>`);
+}
+
 async function build(out) {
   n = 0;
-  const pages = [titlePage(), guidePage(), testPage('الاختبار القبلي', 'قبل البدء', 1), trackerPage()];
+  const pages = [titlePage(), ...X.parentPages(P, LV, 'الحروف العربيّة الثمانية والعشرون وقراءتها بالفتحة والضمّة والكسرة', ['أقرأ ١٠ دقائق', 'ركن الأهل', 'أخطّ وألوّن', 'سورة قصيرة']),
+    guidePage(), testPage('الاختبار القبلي', 'قبل البدء', 1), trackerPage(), X.successChart(P, LV, L.map(l => `حرف ${l.name}`), 7)];
   const learned = [];
   let idx = 0;
   FAMILIES.forEach((fam, k) => {
     for (const c of fam) {
       const l = byCh(c);
       idx++;
-      pages.push(lessonA(l, idx, learned), lessonB(l, idx));
+      pages.push(lessonA(l, idx, learned), lessonB(l, idx), lessonC(l, idx));
       learned.push(c);
     }
-    if (fam.length > 1) pages.push(reviewPage(fam, k));
+    if (fam.length > 1) {
+      const tag = `مراجعة ${hd(k)}`;
+      const words = shuffle(fam.flatMap(c => byCh(c).words), k + 3);
+      pages.push(reviewPage(fam, k));
+      pages.push(X.mergePage(P, LV, tag, fam.join(' '), [...words, ...words].slice(0, 9)));
+      pages.push(X.dictationPage(P, LV, tag, `حروف ${fam.join(' ')}`, [...shuffle(fam.flatMap(c => HS.map(h => syl(c, h))), k).slice(0, 8), ...words.slice(0, 4)], { boxes: 8, lines: 4 }));
+      pages.push(X.quranWordsPage(P, LV, tag, fam, `الحروف ( ${fam.join(' ')} )`, k + 1));
+    }
   });
-  pages.push(testPage('الاختبار البعدي', 'نهاية المستوى', 2), certificatePage());
+  pages.push(X.quranSurahPage(P, LV, 'القرآن', 1, 'أضعُ دائرةً حولَ ثلاثة حروف أعرفها في السورة'));
+  pages.push(testPage('الاختبار البعدي', 'نهاية المستوى', 2), ...X.appendixPages(P, LV), certificatePage());
+  while (pages.length % 4) pages.splice(pages.length - 1, 0, X.coloringPage(P, LV, 'نشاط', 'حروفي الجميلة', 'أ ب ت', 'lion', 'أَسَدٌ'));
   await renderPDF(pages, out);
   return pages.length;
 }

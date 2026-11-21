@@ -2,6 +2,7 @@
 const path = require('path');
 const { hd, H, shuffle, page, header, sec, renderPDF, ROOT } = require('./common');
 const { pic } = require('./pics');
+const X = require('./extra');
 const LV = 2;
 const LET = 'ب ت ث ج ح خ د ذ ر ز س ش ص ض ط ظ ع غ ف ق ك ل م ن ه و ي'.split(' ');
 const gen = f => LET.map(f);
@@ -52,7 +53,7 @@ const U = [
     parent: 'اقرؤوا كلمتين متشابهتين (جَمَلٌ / جَمَالٌ) واطلبوا من الطفل أن يرفع يده عند سماع المدّ.',
   },
   {
-    title: 'السكون', explain: 'السكون (ـْ) يعني أنّ الحرف بلا حركة، فنقرؤه ملتصقاً بالحرف الذي قبله: أَبْ.',
+    title: 'السكون', explain: 'السكون يعني أنّ الحرف بلا حركة، فنقرؤه ملتصقاً بالحرف الذي قبله: أَبْ.',
     eq: [['أَ', ''], '+', ['بْ', 'سكون'], '=', ['أَبْ', 'مقطع']], hero: ['sun', 'شَمْسٌ'],
     table: gen(c => 'أَ' + c + H.sukun),
     words: ['شَمْسٌ', 'بَحْرٌ', 'كَلْبٌ', 'قِرْدٌ', 'ظَرْفٌ', 'طَبْلٌ', 'وَرْدٌ', 'مَوْزٌ', 'بَيْتٌ', 'ثَوْبٌ', 'يَلْعَبُ', 'يَكْتُبُ'],
@@ -96,7 +97,7 @@ const U = [
     parent: 'العبوا لعبة «أين؟»: أين القلم؟ «فِي كِيسٍ»، أين الكرة؟ «تَحْتَ كُرْسِيٍّ».',
   },
   {
-    title: 'الشدّة', explain: 'الشدّة (ـّ) تعني أنّ الحرف مكتوب مرّة ونقرؤه مرّتين: الأول ساكن والثاني متحرّك.',
+    title: 'الشدّة', explain: 'الشدّة تعني أنّ الحرف مكتوب مرّة ونقرؤه مرّتين: الأول ساكن والثاني متحرّك.',
     eq: [['بْ', 'ساكن'], '+', ['بَ', 'متحرّك'], '=', ['بَّ', 'شدّة']], hero: ['bear', 'دُبٌّ'],
     table: gen(c => c + H.shadda + H.fatha),
     words: ['دُبٌّ', 'بَطَّةٌ', 'قِطَّةٌ', 'رُمَّانٌ', 'تُفَّاحٌ', 'سُكَّرٌ', 'أُمٌّ', 'عَمٌّ', 'جَدَّةٌ', 'مُعَلِّمٌ', 'رَسَّامٌ', 'حَمَّامٌ'],
@@ -197,8 +198,8 @@ function reviewPage(units, k) {
   const words = shuffle(units.flatMap(u => u.words), k * 5).slice(0, 24);
   const sents = units.map(u => u.sentences[k % 3]);
   return P(`${header(`مراجعة: ${units.map(u => u.title).join(' · ')}`, `مراجعة ${hd(k)}`, LV)}
-  ${sec(1, 'أقرأُ الكلمات', `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:2.4mm">${words.map(wd => `<div class="cell" style="height:19mm;flex-direction:column">${NK(wd, 22)}</div>`).join('')}</div>`)}
-  ${sec(2, 'أقرأُ الجُمَل', `<div style="display:flex;flex-direction:column;gap:3mm">${sents.map(s => `<div class="cell" style="height:24mm">${NK(s, 30)}</div>`).join('')}</div>`, 'grow')}
+  ${sec(1, 'أقرأُ الكلمات', `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:2.4mm">${words.map(wd => `<div class="cell" style="height:16.5mm;flex-direction:column">${NK(wd, 21)}</div>`).join('')}</div>`)}
+  ${sec(2, 'أقرأُ الجُمَل', `<div style="display:flex;flex-direction:column;gap:3mm">${sents.map(s => `<div class="cell" style="height:20mm">${NK(s, 27)}</div>`).join('')}</div>`, 'grow')}
   <div class="sec" style="display:flex;justify-content:space-around;font-size:14pt;font-weight:700;padding:3mm">
     <span>الكلمات الصحيحة: ...... من ${hd(24)}</span><span>الجمل: ...... من ${hd(3)}</span><span>توقيع المعلّم: ..........</span></div>`);
 }
@@ -234,7 +235,7 @@ function guidePage() {
     ['البطاقات', 'في آخر الكتاب بطاقات للقصّ تُستعمل في ألعاب القراءة داخل الصف وفي البيت.'],
   ];
   return P(`${header('كيف تستعمل هذا الكتاب؟', 'دليل المعلّم', LV)}
-  <div class="sec" style="font-size:12.5pt;line-height:1.75">ينقل هذا المستوى التلميذ من قراءة الحرف إلى قراءة الكلمة والجملة القصيرة، عبر اثنتي عشرة وحدة: المدود الثلاثة، والسكون، والتنوين بأنواعه، والشدّة، والتاء المربوطة، واللام القمريّة والشمسيّة.</div>
+  <div class="sec" style="font-size:12.5pt;line-height:1.75">ينقل هذا المستوى التلميذ من قراءة الحرف إلى قراءة الكلمة والجملة القصيرة، عبر اثنتي عشرة وحدة: المدود الثلاثة، والسكون، والتنوين بأنواعه، والشدّة، والتاء المربوطة، واللام القمريّة والشمسيّة. <b>المرجع المنهجي:</b> يتبع الكتاب تسلسل «القاعدة النورانيّة» المجرّب في تعليم القراءة (الحرف ← الحركة ← التنوين ← المدّ ← السكون ← الشدّة)، مع التعلّم متعدّد الحواس: أرى، أسمع، أنطق، أكتب، ألوّن. ويضمّ: قرآناً كريماً، وإملاءً، وخطّاً، وتلويناً، ودمجاً للحروف، وقراءات، ولوحة نجاح، وصفحات للأهل.</div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:4mm">${steps.map(([t, d], i) => `<div class="sec" style="padding:3.5mm 4.5mm"><div class="t"><i>${hd(i + 1)}</i><span>${t}</span></div><div style="font-size:11.5pt;line-height:1.7">${d}</div></div>`).join('')}</div>
   ${sec(7, 'محتوى الوحدات', `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2mm;font-size:11.5pt;font-weight:700">${U.map((u, i) => `<div>${hd(i + 1)}. ${u.title}</div>`).join('')}</div>`)}
   <div class="parent"><b>للأهل:</b><span>في كل وحدة «ركن الأهل» بنشاط بيتي قصير. عشر دقائق يومياً مع التشجيع تصنع فرقاً كبيراً.</span></div>`);
@@ -262,17 +263,47 @@ function certificatePage() {
     <div class="row" style="width:120mm;height:30mm;margin-top:4mm">${['whale', 'elephant', 'bear'].map(i => `<div style="flex:1">${pic(i)}</div>`).join('')}</div></div>`);
 }
 
+const QMAP = [[1, 'أكتبُ كلمةً فيها مدٌّ بالألف'], [112, 'أكتبُ كلمةً فيها مدٌّ بالواو'], [113, 'أكتبُ كلمةً فيها مدٌّ بالياء'],
+  [105, 'أكتبُ كلمةً فيها حركةٌ قصيرة، وكلمةً فيها مدّ'], [108, 'أكتبُ كلمةً فيها حرفٌ ساكن'], [103, 'أكتبُ كلمةً فيها تنوين'],
+  [110, 'أكتبُ كلمةً فيها تنوينُ فتح'], [111, 'أكتبُ كلمةً فيها تنوينُ كسر'], [109, 'أكتبُ كلمةً فيها شدّة'],
+  [107, 'أكتبُ كلمةً تنتهي بهاء'], [106, 'أكتبُ كلمةً فيها لامٌ قمريّة'], [114, 'أكتبُ كلمةً فيها لامٌ شمسيّة']];
+const READ = [
+  ['بَيْتُ سَامِرٍ', 'house', 'هَذَا بَيْتُ سَامِرٍ. فِي الْبَيْتِ بَابٌ كَبِيرٌ. فِي الْحَدِيقَةِ نَخْلَةٌ عَالِيَةٌ. يَلْعَبُ سَامِرٌ مَعَ أُخْتِهِ. أُمُّهُ تُحِبُّهُ كَثِيرًا.', ['مَاذَا فِي الْبَيْتِ؟', 'مَعَ مَنْ يَلْعَبُ سَامِرٌ؟', 'أَيْنَ النَّخْلَةُ؟']],
+  ['فِي الْبَحْرِ', 'fish', 'ذَهَبَ وَلِيدٌ إِلَى الْبَحْرِ. رَأَى سَمَكًا مُلَوَّنًا. رَأَى حُوتًا كَبِيرًا. جَمَعَ وَلِيدٌ صَدَفًا جَمِيلًا. عَادَ إِلَى الْبَيْتِ سَعِيدًا.', ['إِلَى أَيْنَ ذَهَبَ وَلِيدٌ؟', 'مَاذَا رَأَى وَلِيدٌ؟', 'مَاذَا جَمَعَ وَلِيدٌ؟']],
+  ['دُبٌّ صَغِيرٌ', 'bear', 'فِي الْغَابَةِ دُبٌّ صَغِيرٌ. يُحِبُّ الدُّبُّ الْعَسَلَ. رَأَى نَحْلَةً عَلَى وَرْدَةٍ. قَالَ: شُكْرًا يَا نَحْلَةُ. أَكَلَ الدُّبُّ الْعَسَلَ وَنَامَ.', ['أَيْنَ يَعِيشُ الدُّبُّ؟', 'مَاذَا يُحِبُّ الدُّبُّ؟', 'مَاذَا قَالَ الدُّبُّ لِلنَّحْلَةِ؟']],
+];
+function readingPage([title, img, text, qs], k) {
+  return P(`${header(`أقرأ القصّة: ${title}`, `قراءة ${hd(k)}`, LV)}
+  <div class="row"><div class="cell" style="flex:0 0 52mm;height:52mm;padding:2mm">${pic(img)}</div>
+    ${sec(1, 'أقرأُ', `<div style="line-height:2.2">${NK(text, 24, 'line-height:2.2')}</div>`, 'grow')}</div>
+  ${sec(2, 'أُجيبُ', `<div style="display:flex;flex-direction:column;gap:2mm">${qs.map(q => `<div>${NK(q, 21)}<div style="border-bottom:.5mm solid #111;height:11mm"></div></div>`).join('')}</div>`, 'grow')}
+  <div class="row" style="font-size:11pt;font-weight:700">${[1, 2, 3].map(k2 => `<div class="cell" style="height:11mm">القراءة ${hd(k2)}: ..... ثانية</div>`).join('')}</div>`);
+}
+const COLOR = [['بَا بُو بِي', 'whale', 'حُوتٌ'], ['أَسَدٌ', 'lion', 'أَسَدٌ'], ['دُبٌّ', 'bear', 'دُبٌّ'], ['الْقَمَرُ', 'owl', 'بُومَةٌ']];
+
 async function build(out) {
   n = 0;
-  const pages = [titlePage(), guidePage(), testPage('الاختبار القبلي', 'قبل البدء', 1), trackerPage()];
+  const pages = [titlePage(), ...X.parentPages(P, LV, 'المدود والسكون والتنوين والشدّة والتاء المربوطة واللام القمريّة والشمسيّة', ['أقرأ ١٠ دقائق', 'ركن الأهل', 'إملاء بيتي', 'سورة قصيرة']),
+    guidePage(), testPage('الاختبار القبلي', 'قبل البدء', 1), trackerPage(), X.successChart(P, LV, [...U.map(u => u.title), 'مراجعة ١', 'مراجعة ٢', 'مراجعة ٣', 'مراجعة ٤'], 4)];
   U.forEach((u, i) => {
+    const tag = `الوحدة ${hd(i + 1)}`;
     pages.push(unitA(u, i + 1), unitB(u, i + 1), unitC(u, i + 1), unitD(u, i + 1));
-    if ((i + 1) % 3 === 0) pages.push(reviewPage(U.slice(i - 2, i + 1), (i + 1) / 3));
+    pages.push(X.quranSurahPage(P, LV, tag, QMAP[i][0], QMAP[i][1]));
+    pages.push(X.dictationPage(P, LV, tag, u.title, [...shuffle(u.words, i + 9).slice(0, 8), ...u.sentences.slice(0, 2)], { boxes: 8, lines: 3 }));
+    if (i % 2) pages.push(X.tracingPage(P, LV, `الوحدتان ${hd(i)}–${hd(i + 1)}`, `${U[i - 1].title} و${u.title}`, [...U[i - 1].words.slice(0, 3), ...u.words.slice(0, 3)], { pt: 30 }));
+    if ((i + 1) % 3 === 0) {
+      const k = (i + 1) / 3;
+      pages.push(reviewPage(U.slice(i - 2, i + 1), k));
+      const c = COLOR[k - 1];
+      pages.push(X.coloringPage(P, LV, `مراجعة ${hd(k)}`, c[0], c[0], c[1], c[2]));
+      if (k <= 3) pages.push(readingPage(READ[k - 1], k));
+    }
   });
   pages.push(testPage('الاختبار البعدي', 'نهاية المستوى', 2));
   pages.push(cardsPage('بطاقات المدود', shuffle(['بَا', 'تُو', 'سِي', 'نَا', 'فِي', 'لُو', 'مَا', 'رِي', 'دُو', 'كَا', 'جِي', 'حُو', 'قَا', 'زِي', 'نُو', 'شَا', 'طِي', 'عُو', 'هَا', 'وِي'], 3)));
   pages.push(cardsPage('بطاقات الكلمات', shuffle(['شَمْسٌ', 'كَلْبٌ', 'قَلَمًا', 'بَيْتٍ', 'دُبٌّ', 'أُمٌّ', 'وَرْدَةٌ', 'الْقَمَرُ', 'الشَّمْسُ', 'بَابٌ', 'فِيلٌ', 'حُوتٌ', 'سُكَّرٌ', 'بَحْرٍ', 'أَهْلًا', 'نَحْلَةٌ', 'الْوَلَدُ', 'السَّمَكُ', 'يَلْعَبُ', 'كِتَابٌ'], 5)));
-  pages.push(certificatePage());
+  pages.push(...X.appendixPages(P, LV), certificatePage());
+  while (pages.length % 4) pages.splice(pages.length - 1, 0, X.coloringPage(P, LV, 'نشاط', 'كلماتي الجميلة', 'وَرْدَةٌ', 'rose', 'وَرْدَةٌ'));
   await renderPDF(pages, out);
   return pages.length;
 }
