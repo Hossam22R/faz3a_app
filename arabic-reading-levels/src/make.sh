@@ -6,5 +6,6 @@ node src/level1.js && node src/level2.js && node src/level3.js && node src/cover
 for i in 1 2 3; do
   python3 src/fixbox.py output/level$i-interior.pdf 210 297
   python3 src/fixbox.py output/level$i-cover.pdf 216 303
+  python3 src/fixbox.py output/level$i-back-cover.pdf 216 303
 done
 rm -f output/*.html

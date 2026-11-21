@@ -1,5 +1,5 @@
 // صفحات مشتركة إضافية: قرآن، إملاء، تخطيط، تلوين، دمج، الأهل، لوحة النجاح، ملحق المعلّم
-const { hd, shuffle, header, sec } = require('./common');
+const { hd, shuffle, header, sec, inkSVG } = require('./common');
 const { pic } = require('./pics');
 const Q = require('quran-json/dist/quran.json');
 
@@ -91,8 +91,7 @@ function tracingPage(P, level, tag, title, rows, opts = {}) {
 
 // التلوين: نصّ مفرّغ كبير + صورة
 function coloringPage(P, level, tag, title, text, img, caption) {
-  const big = `<svg viewBox="0 0 1000 520" width="100%" height="100%"><text x="500" y="330" text-anchor="middle" font-family="Naskh" font-size="${text.length > 3 ? 230 : 360}" fill="#fff" stroke="#111" stroke-width="9" stroke-linejoin="round" paint-order="stroke">${text}</text>
-    ${[[70, 80], [930, 90], [80, 460], [920, 450], [500, 40]].map(([x, y]) => `<path d="M${x} ${y - 30} L${x + 9} ${y - 9} L${x + 30} ${y} L${x + 9} ${y + 9} L${x} ${y + 30} L${x - 9} ${y + 9} L${x - 30} ${y} L${x - 9} ${y - 9}Z" fill="#fff" stroke="#111" stroke-width="5" stroke-linejoin="round"/>`).join('')}</svg>`;
+  const big = `<div style="position:relative;height:100%;padding:4mm 14mm">${inkSVG(text, { stroke: 4, pad: 0.05 })}${[[7, 15], [93, 15], [7, 85], [93, 85]].map(([a, b]) => `<span style="position:absolute;left:${a}%;top:${b}%;font-size:22pt;transform:translate(-50%,-50%)">✦</span>`).join('')}</div>`;
   return P(`${header(`ألوّن: ${title}`, tag, level)}
   <div class="sec" style="height:92mm;padding:2mm">${big}</div>
   <div class="sec grow" style="display:flex;flex-direction:column;align-items:center;padding:4mm;min-height:0"><div style="flex:1;width:100%;min-height:0">${pic(img)}</div>${caption ? NK(caption, 28) : ''}</div>`);

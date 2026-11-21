@@ -1,6 +1,6 @@
 // المستوى الأول: أتعرّف الحروف وأقرؤها بالحركات القصيرة
 const path = require('path');
-const { hd, H, hl, shuffle, page, header, sec, renderPDF, ROOT } = require('./common');
+const { hd, H, hl, shuffle, page, header, sec, renderPDF, ROOT, inkSVG } = require('./common');
 const { pic } = require('./pics');
 const X = require('./extra');
 const LV = 1;
@@ -119,7 +119,7 @@ function lessonA(l, idx, learned) {
   const fm = forms(l);
   return P(`${header(`حرف ${l.name}`, `الدرس ${hd(idx)}`, LV)}
   <div class="row" style="height:62mm">
-    <div class="cell" style="flex:0 0 66mm;flex-direction:column;border-width:.9mm">${S(l.ch, 'hero')}</div>
+    <div class="cell" style="flex:0 0 66mm;flex-direction:column;border-width:.9mm;padding:6mm">${inkSVG(l.ch, { pad: 0.04 })}</div>
     <div class="cell" style="flex-direction:column;padding:3mm;gap:1mm"><div style="height:46mm;width:100%">${pic(l.img)}</div>
       <div class="nk" style="font-size:30pt;line-height:1.4">${hl(l.key, hlSet(l.ch))}</div></div>
   </div>
@@ -171,11 +171,11 @@ function certificatePage() {
 function lessonC(l, idx) {
   const fm = forms(l).map(f => f[1]).join('   ');
   const rows = [Array(5).fill(l.ch).join('   '), HS.map(h => syl(l.ch, h)).join('   '), fm, l.key];
-  const big = `<svg viewBox="0 0 1000 560" width="100%" height="100%"><text x="500" y="400" text-anchor="middle" font-family="Naskh" font-size="420" fill="#fff" stroke="#111" stroke-width="10" stroke-linejoin="round" paint-order="stroke">${l.ch}</text>
-    ${[[90, 90], [910, 100], [100, 480], [900, 470]].map(([x, y]) => `<path d="M${x} ${y - 34} L${x + 10} ${y - 10} L${x + 34} ${y} L${x + 10} ${y + 10} L${x} ${y + 34} L${x - 10} ${y + 10} L${x - 34} ${y} L${x - 10} ${y - 10}Z" fill="#fff" stroke="#111" stroke-width="5" stroke-linejoin="round"/>`).join('')}</svg>`;
+  const stars = [[8, 12], [92, 12], [8, 86], [92, 86]].map(([x, y]) => `<span style="position:absolute;left:${x}%;top:${y}%;font-size:22pt;transform:translate(-50%,-50%)">✦</span>`).join('');
+  const big = `<div style="position:relative;height:100%;padding:6mm 18mm">${inkSVG(l.ch, { stroke: 5, pad: 0.05 })}${stars}</div>`;
   return P(`${header(`أخطُّ وألوّنُ حرف ${l.name}`, `الدرس ${hd(idx)}`, LV)}
   ${sec(1, 'أكتبُ فوقَ الرماديّ ثمّ أكتبُ وحدي', `<div style="display:flex;flex-direction:column;gap:2.2mm">${rows.map(r => `<div class="cell" style="height:21mm;justify-content:space-between;padding:0 4mm">${S(r, 'sm trace')}<span style="width:40%;border-bottom:.5mm solid #111;height:12mm"></span></div>`).join('')}</div>`)}
-  <div class="sec grow" style="display:flex;flex-direction:column"><div class="t"><i>${hd(2)}</i><span>ألوّنُ الحرفَ وأزيّنُه بألواني</span></div><div style="flex:1">${big}</div></div>`);
+  <div class="sec grow" style="display:flex;flex-direction:column;min-height:0"><div class="t"><i>${hd(2)}</i><span>ألوّنُ الحرفَ وأزيّنُه بألواني</span></div><div style="flex:1;min-height:0">${big}</div></div>`);
 }
 
 async function build(out) {

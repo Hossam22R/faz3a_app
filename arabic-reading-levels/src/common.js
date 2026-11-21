@@ -92,7 +92,18 @@ const header = (title, tag, level) =>
 const sec = (num, title, body, extra = '', note = '') =>
   `<div class="sec ${extra}"><div class="t"><i>${hd(num)}</i><span>${title}</span>${note ? `<small>${note}</small>` : ''}</div>${body}</div>`;
 
+// حرف/كلمة كبيرة تُضبط على حدود الحبر الفعلية (لا على صندوق الخط) فتتوسّط مكانها دائماً
+const inkSVG = (t, { stroke = 0, fill = '#111', pad = 0.06, cls = '' } = {}) =>
+  `<svg class="ink ${cls}" data-pad="${pad}" data-sw="${stroke}" viewBox="-100 -100 200 200" width="100%" height="100%" preserveAspectRatio="xMidYMid meet"><text x="0" y="0" text-anchor="middle" direction="rtl" font-family="Naskh" font-size="200" fill="${stroke ? '#fff' : fill}" ${stroke ? `stroke="#111" stroke-width="${stroke}" stroke-linejoin="round" paint-order="stroke"` : ''}>${t}</text></svg>`;
 const FIT_JS = `
+{ const c = document.createElement('canvas').getContext('2d');
+  for (const s of document.querySelectorAll('svg.ink')) {
+    const t = s.querySelector('text'); c.font = '200px Naskh'; c.direction = 'rtl'; c.textAlign = 'center';
+    const m = c.measureText(t.textContent); const sw = +s.dataset.sw / 2;
+    const x0 = -m.actualBoundingBoxLeft - sw, x1 = m.actualBoundingBoxRight + sw, y0 = -m.actualBoundingBoxAscent - sw, y1 = m.actualBoundingBoxDescent + sw;
+    const p = Math.max(x1 - x0, y1 - y0) * +s.dataset.pad;
+    s.setAttribute('viewBox', [x0 - p, y0 - p, x1 - x0 + 2 * p, y1 - y0 + 2 * p].join(' '));
+  } }
 for (const s of document.querySelectorAll('svg[data-fit]')) {
   const b = s.querySelector('g').getBBox(); const p = 10;
   s.setAttribute('viewBox', [b.x - p, b.y - p, b.width + 2 * p, b.height + 2 * p].join(' '));
@@ -122,4 +133,4 @@ async function renderPDF(pagesHTML, file, { browser } = {}) {
   if (own) await browser.close();
 }
 
-module.exports = { CSS, hd, H, hl, shuffle, page, header, sec, renderPDF, ROOT };
+module.exports = { inkSVG, CSS, hd, H, hl, shuffle, page, header, sec, renderPDF, ROOT };
