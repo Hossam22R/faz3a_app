@@ -93,12 +93,12 @@ const sec = (num, title, body, extra = '', note = '') =>
   `<div class="sec ${extra}"><div class="t"><i>${hd(num)}</i><span>${title}</span>${note ? `<small>${note}</small>` : ''}</div>${body}</div>`;
 
 // حرف/كلمة كبيرة تُضبط على حدود الحبر الفعلية (لا على صندوق الخط) فتتوسّط مكانها دائماً
-const inkSVG = (t, { stroke = 0, fill = '#111', pad = 0.06, cls = '' } = {}) =>
-  `<svg class="ink ${cls}" data-pad="${pad}" data-sw="${stroke}" viewBox="-100 -100 200 200" width="100%" height="100%" preserveAspectRatio="xMidYMid meet"><text x="0" y="0" text-anchor="middle" direction="rtl" font-family="Naskh" font-size="200" fill="${stroke ? '#fff' : fill}" ${stroke ? `stroke="#111" stroke-width="${stroke}" stroke-linejoin="round" paint-order="stroke"` : ''}>${t}</text></svg>`;
+const inkSVG = (t, { stroke = 0, fill = '#111', pad = 0.06, cls = '', font = 'Naskh', weight = 400 } = {}) =>
+  `<svg class="ink ${cls}" data-pad="${pad}" data-sw="${stroke}" data-font="${weight} 200px ${font}" viewBox="-100 -100 200 200" width="100%" height="100%" preserveAspectRatio="xMidYMid meet"><text x="0" y="0" text-anchor="middle" direction="rtl" font-family="${font}" font-weight="${weight}" font-size="200" fill="${stroke ? '#fff' : fill}" ${stroke ? `stroke="#111" stroke-width="${stroke}" stroke-linejoin="round" paint-order="stroke"` : ''}>${t}</text></svg>`;
 const FIT_JS = `
 { const c = document.createElement('canvas').getContext('2d');
   for (const s of document.querySelectorAll('svg.ink')) {
-    const t = s.querySelector('text'); c.font = '200px Naskh'; c.direction = 'rtl'; c.textAlign = 'center';
+    const t = s.querySelector('text'); c.font = s.dataset.font || '200px Naskh'; c.direction = 'rtl'; c.textAlign = 'center';
     const m = c.measureText(t.textContent); const sw = +s.dataset.sw / 2;
     const x0 = -m.actualBoundingBoxLeft - sw, x1 = m.actualBoundingBoxRight + sw, y0 = -m.actualBoundingBoxAscent - sw, y1 = m.actualBoundingBoxDescent + sw;
     const p = Math.max(x1 - x0, y1 - y0) * +s.dataset.pad;
@@ -109,9 +109,9 @@ for (const s of document.querySelectorAll('svg[data-fit]')) {
   s.setAttribute('viewBox', [b.x - p, b.y - p, b.width + 2 * p, b.height + 2 * p].join(' '));
 }`;
 
-async function renderPDF(pagesHTML, file, { browser } = {}) {
+async function renderPDF(pagesHTML, file, { browser, css = '' } = {}) {
   const { chromium } = require('playwright');
-  const html = `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><style>${CSS}</style></head><body>${pagesHTML.join('')}</body></html>`;
+  const html = `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><style>${CSS}${css}</style></head><body>${pagesHTML.join('')}</body></html>`;
   fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file.replace(/\.pdf$/, '.html'), html);
   const own = !browser;
@@ -132,7 +132,7 @@ async function renderPDF(pagesHTML, file, { browser } = {}) {
   const side = await p.evaluate(() => [...document.querySelectorAll('.page')].map((pg, i) => {
     const r = pg.getBoundingClientRect(), m = 8.4 * 96 / 25.4;
     for (const el of pg.querySelectorAll('*')) {
-      if (el.closest('.wsl') || el.closest('.wmk')) continue;
+      if (el.closest('.wsl') || el.closest('.wmk') || el.closest('.tab')) continue;
       if (el.ownerSVGElement) continue; // ما داخل الرسوم يُقصّ بحدودها
       const b = el.getBoundingClientRect();
       if (b.width && (b.left < r.left + m - 0.5 || b.right > r.right - m + 0.5)) return i + 1;
