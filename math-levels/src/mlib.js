@@ -130,4 +130,51 @@ function openLine(points, jumps, { h = 90 } = {}) {
 // جدول المنازل
 const pvChart = (t, o, blank = false) => `<table style="width:100%;font-size:22pt;font-weight:800"><tr style="height:9mm;font-size:12pt"><th style="background:#DBEAFE!important">العشرات</th><th style="background:#FFEDD5!important">الآحاد</th></tr><tr style="height:15mm"><td>${blank ? '' : hd(t)}</td><td>${blank ? '' : hd(o)}</td></tr></table>`;
 
-module.exports = { baseTen, hundredChart, openLine, pvChart, icon, ICONS, scatter, face, WORDS, dots, tenFrame, doubleFrame, numberLine, bond, objects, OBJS, eq, svg };
+
+// مصفوفة: صفوف × أعمدة من نقاط (تبدأ من اليمين)، مع خطّ فاصل اختياريّ لتفكيك الضرب
+function array(r, c, { color = '#7C3AED', split = 0, splitColor = '#F97316', empty = false } = {}) {
+  const s = 30;
+  let o = '';
+  for (let y = 0; y < r; y++) for (let x = 0; x < c; x++) {
+    const cx = (c - 1 - x) * s + s / 2 + 4, cy = y * s + s / 2 + 4;
+    o += empty ? `<circle cx="${cx}" cy="${cy}" r="10" fill="#fff" stroke="#94a3b8" stroke-width="2"/>` : `<circle cx="${cx}" cy="${cy}" r="11" fill="${split && y >= split ? splitColor : color}"/>`;
+  }
+  if (split) o += `<line x1="0" y1="${split * s + 4}" x2="${c * s + 8}" y2="${split * s + 4}" stroke="#111" stroke-width="3" stroke-dasharray="6 4"/>`;
+  return svg(`0 0 ${c * s + 8} ${r * s + 8}`, o);
+}
+// مجموعات متساوية: g دوائر في كلّ منها n نقطة
+function groups(g, n, { color = '#2563EB', blankDots = false } = {}) {
+  const R = 46, W = g * (2 * R + 12);
+  let o = '';
+  for (let k = 0; k < g; k++) {
+    const cx = W - (k * (2 * R + 12) + R + 6), cy = R + 6;
+    o += `<circle cx="${cx}" cy="${cy}" r="${R}" fill="#F5F3FF" stroke="#4C1D95" stroke-width="3"/>`;
+    if (!blankDots) for (let i = 0; i < n; i++) {
+      const a = (i / Math.max(n, 1)) * Math.PI * 2 - Math.PI / 2, rr = n === 1 ? 0 : n <= 4 ? 20 : 28;
+      o += `<circle cx="${cx + rr * Math.cos(a)}" cy="${cy + rr * Math.sin(a)}" r="${n > 6 ? 7 : 9}" fill="${color}"/>`;
+    }
+  }
+  return svg(`0 0 ${W} ${2 * R + 12}`, o);
+}
+// شريط الضرب: g أجزاء متساوية قيمة كلّ منها n
+function barMul(g, n, { unknown = 'whole', showN = true } = {}) {
+  const W = 300, w = W / g;
+  let o = `<rect x="10" y="10" width="${W}" height="34" rx="4" fill="#FFE08A" stroke="#111" stroke-width="3"/><text x="${10 + W / 2}" y="35" text-anchor="middle" font-family="Cairo" font-weight="800" font-size="24">${unknown === 'whole' ? '?' : hd(g * n)}</text>`;
+  for (let k = 0; k < g; k++) o += `<rect x="${10 + W - (k + 1) * w}" y="56" width="${w}" height="34" fill="#E9D5FF" stroke="#111" stroke-width="2.5"/><text x="${10 + W - (k + 0.5) * w}" y="81" text-anchor="middle" font-family="Cairo" font-weight="800" font-size="${g > 6 ? 16 : 22}">${unknown === 'part' ? '?' : showN ? hd(n) : ''}</text>`;
+  return svg('0 0 320 100', o);
+}
+// جدول الضرب (١٠×١٠) يبدأ من اليمين، مع تظليل ما تعلّمه التلميذ
+function timesChart({ known = [], hideAll = false } = {}) {
+  const s = 40;
+  let o = '';
+  for (let r = 0; r <= 10; r++) for (let c = 0; c <= 10; c++) {
+    const x = (10 - c) * s, y = r * s, head = r === 0 || c === 0;
+    const v = r * c, fill = head ? '#1E3A8A' : known.some(k => k === r || k === c) ? '#EDE9FE' : '#fff';
+    o += `<rect x="${x}" y="${y}" width="${s}" height="${s}" fill="${r === 0 && c === 0 ? '#fff' : fill}" stroke="#475569" stroke-width="1.4"/>`;
+    const t = r === 0 && c === 0 ? '×' : r === 0 ? hd(c) : c === 0 ? hd(r) : hideAll ? '' : hd(v);
+    o += `<text x="${x + s / 2}" y="${y + 27}" text-anchor="middle" font-family="Cairo" font-weight="${head ? 800 : 600}" font-size="${v > 9 ? 16 : 18}" fill="${head && !(r === 0 && c === 0) ? '#fff' : '#111'}">${t}</text>`;
+  }
+  return svg(`-2 -2 ${11 * s + 4} ${11 * s + 4}`, o);
+}
+
+module.exports = { array, groups, barMul, timesChart, baseTen, hundredChart, openLine, pvChart, icon, ICONS, scatter, face, WORDS, dots, tenFrame, doubleFrame, numberLine, bond, objects, OBJS, eq, svg };
