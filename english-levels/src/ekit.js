@@ -7,10 +7,11 @@ const { pic } = require(R + 'pics');
 const MT = require('../../math-levels/src/mtheme');
 const M = require('../../math-levels/src/mlib');
 const ROOT = path.resolve(__dirname, '..');
-const b64 = f => fs.readFileSync(path.join(ROOT, 'node_modules/@fontsource', f)).toString('base64');
-const ff = (fam, f, wt) => `@font-face{font-family:'${fam}';font-weight:${wt};src:url(data:font/woff2;base64,${b64(f)}) format('woff2')}`;
-const FONTS = ff('Andika', 'andika/files/andika-latin-400-normal.woff2', 400) + ff('Andika', 'andika/files/andika-latin-700-normal.woff2', 700) +
-  [500, 600, 700].map(w => ff('Fredoka', `fredoka/files/fredoka-latin-${w}-normal.woff2`, w)).join('');
+// خطّ Cairo وحده (هويّة وصال): الأسماء Andika وFredoka مجرّد أسماء داخليّة تشير إلى ملفّات Cairo
+const CF = f => fs.readFileSync(path.join(ROOT, '../arabic-reading-levels/fonts', f)).toString('base64');
+const ff = (fam, f, wt) => `@font-face{font-family:'${fam}';font-weight:${wt};src:url(data:font/ttf;base64,${CF(f)}) format('truetype')}`;
+const FONTS = ff('Andika', 'Cairo-SemiBold.ttf', 400) + ff('Andika', 'Cairo-Bold.ttf', 700) +
+  ff('Fredoka', 'Cairo-SemiBold.ttf', 500) + ff('Fredoka', 'Cairo-Bold.ttf', 600) + ff('Fredoka', 'Cairo-ExtraBold.ttf', 700);
 
 const VOW = 'aeiouAEIOU';
 const VC = '#E63946', CC = '#1D4ED8';
@@ -57,7 +58,7 @@ function makeKit(LV, GOALS) {
   // كلمة بأزرار صوتيّة (نقطة تحت كلّ صوت)
   K.sb = (w, pt = 30) => `<span style="display:inline-flex;gap:1.4mm;align-items:flex-end">${[...w].map(c => `<span style="display:inline-flex;flex-direction:column;align-items:center"><span class="en" style="font-weight:700;font-size:${pt}pt;line-height:1.1;color:${VOW.includes(c) ? VC : CC}">${c}</span><span style="width:3.2mm;height:3.2mm;border-radius:50%;background:${VOW.includes(c) ? VC : CC};margin-top:.8mm"></span></span>`).join('')}</span>`;
   // سطر الكتابة الرباعيّ مع نصّ رماديّ للتتبّع
-  K.hw = (text = '', { fs = 120, ls = 26 } = {}) => `<div style="width:100%;aspect-ratio:1000/150">${M.svg('0 0 1000 150', `<line x1="0" y1="24" x2="1000" y2="24" stroke="#94a3b8" stroke-width="2"/><line x1="0" y1="47" x2="1000" y2="47" stroke="#F87171" stroke-width="2.2" stroke-dasharray="12 9"/><line x1="0" y1="110" x2="1000" y2="110" stroke="#1E3A8A" stroke-width="3"/><line x1="0" y1="140" x2="1000" y2="140" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="6 8"/><text x="18" y="110" font-family="Andika" font-size="${fs}" fill="#c4c9d1" letter-spacing="${ls}">${text}</text>`).replace('xMidYMid meet', 'xMinYMid meet')}</div>`;
+  K.hw = (text = '', { fs = 112, ls = 26 } = {}) => `<div style="width:100%;aspect-ratio:1000/150">${M.svg('0 0 1000 150', `<line x1="0" y1="24" x2="1000" y2="24" stroke="#94a3b8" stroke-width="2"/><line x1="0" y1="47" x2="1000" y2="47" stroke="#F87171" stroke-width="2.2" stroke-dasharray="12 9"/><line x1="0" y1="110" x2="1000" y2="110" stroke="#1E3A8A" stroke-width="3"/><line x1="0" y1="140" x2="1000" y2="140" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="6 8"/><text x="18" y="110" font-family="Andika" font-size="${fs}" fill="#c4c9d1" letter-spacing="${ls}">${text}</text>`).replace('xMidYMid meet', 'xMinYMid meet')}</div>`;
   K.grid = (cols, items, h = 'fill', gap = 2.6) => h === 'fill'
     ? `<div style="display:grid;grid-template-columns:repeat(${cols},minmax(0,1fr));grid-auto-rows:1fr;gap:${gap}mm;flex:1;min-height:0">${items.map(it => `<div class="cell" style="padding:1.5mm;gap:2mm;min-height:0;min-width:0;overflow:hidden;flex-direction:column">${it}</div>`).join('')}</div>`
     : `<div style="display:grid;grid-template-columns:repeat(${cols},minmax(0,1fr));gap:${gap}mm">${items.map(it => `<div class="cell" style="height:${h}mm;padding:1.5mm;gap:2mm;min-width:0">${it}</div>`).join('')}</div>`;
